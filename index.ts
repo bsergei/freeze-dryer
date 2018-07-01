@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import { Container } from 'inversify';
 import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
 import TYPES from './constant/types';
 import { TempSensorService } from './service/temp-sensor.service';
 import { StorageService } from './service/storage.service';
@@ -18,6 +19,7 @@ container.bind<StorageService>(TYPES.StorageService).to(StorageService);
 let server = new InversifyExpressServer(container);
 
 server.setConfig((app) => {
+  app.use(cors());
   app.use(bodyParser.urlencoded({
     extended: true
   }));

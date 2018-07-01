@@ -5,7 +5,7 @@ import TYPES from '../constant/types';
 import { Request } from 'express';
 import { SensorTemp } from '../model/sensor-temp.model';
 
-@controller('/sensor-temp')
+@controller('/api/sensor/temp')
 export class SensorTempController {
 
   constructor(@inject(TYPES.TempSensorService) private tempSensorService: TempSensorService) {

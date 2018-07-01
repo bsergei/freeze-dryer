@@ -9,7 +9,7 @@ import { SensorOpt } from '../model/sensor-opt.model';
 
 const StorageSensorOptsKey = 'storage:sensor-opts';
 
-@controller('/sensort-opt')
+@controller('/api/sensor/opt')
 export class SensorOptController {
     constructor(@inject(TYPES.StorageService) private storageService: StorageService) {
     }
