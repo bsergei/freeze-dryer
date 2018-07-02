@@ -11,7 +11,8 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "moduleResolution": "node",
-        "noUnusedLocals": true
+        "noUnusedLocals": true,
+        "outDir": "./dist"
     },
     "compileOnSave": false,
     "exclude": [

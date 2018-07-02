@@ -1,5 +1,5 @@
 import {
-    controller, httpGet, httpPost, httpPut, httpDelete
+    controller, httpGet, httpPost, httpDelete
 } from 'inversify-express-utils';
 import { inject } from 'inversify';
 import { Request, Response } from 'express';
@@ -39,27 +39,16 @@ export class SensorOptController {
         const validated = this.getValidatedItemFromBody(request);
 
         if (validated.sensor_id) {
-            result.push(validated);
+            const item = result.find(v => v.sensor_id === request.params.id);
+            if (item) {
+                item.sensor_type = validated.sensor_type;
+            } else {
+                result.push(validated);
+            }
             await this.storageService.set<SensorOpt[]>(StorageSensorOptsKey, result);
         }
 
         return validated;
-    }
-
-    @httpPut('/:id')
-    public async updateSensorOpt(request: Request, response: Response) {
-        await this.storageService.isConnected;
-        const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
-        const item =  result.find(v => v.sensor_id === request.params.id);
-        if (item) {
-            const validated = this.getValidatedItemFromBody(request);
-            item.display_name = validated.display_name;
-            item.connection_id = validated.connection_id;
-            await this.storageService.set<SensorOpt[]>(StorageSensorOptsKey, result);
-            return item;
-        } else {
-            response.status(404);
-        }
     }
 
     @httpDelete('/:id')
@@ -80,8 +69,7 @@ export class SensorOptController {
         const newItem = request.body;
         const validated: SensorOpt = {
             sensor_id: newItem.sensor_id,
-            display_name: newItem.display_name,
-            connection_id: newItem.connection_id
+            sensor_type: newItem.sensor_type
         };
 
         return validated;
