@@ -1,5 +1,6 @@
 import { controller, httpGet } from 'inversify-express-utils';
 import { Request } from 'express';
+import { SensorTypes } from '../model/sensor-type.model';
 
 @controller('/api/sensor/type')
 export class SensorTypeController {
@@ -9,24 +10,6 @@ export class SensorTypeController {
 
   @httpGet('/')
   public async get(req: Request) {
-      return [{
-        id: 'Condenser Input'
-      },
-      {
-        id: 'Condenser Output'
-      },
-      {
-        id: 'Freezer Camera'
-      },
-      {
-        id: 'Product'
-      },
-      {
-        id: 'Heater'
-      },
-      {
-        id: 'Compressor'
-      }
-    ];;
+      return SensorTypes;
   }
 }

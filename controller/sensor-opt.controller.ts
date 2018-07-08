@@ -4,27 +4,22 @@ import {
 import { inject } from 'inversify';
 import { Request, Response } from 'express';
 import TYPES from '../constant/types';
-import { StorageService } from '../service/storage.service';
 import { SensorOpt } from '../model/sensor-opt.model';
-
-const StorageSensorOptsKey = 'storage:sensor-opts';
+import { TempSensorOptService } from '../service/temp-sensor-opt.service';
 
 @controller('/api/sensor/opt')
 export class SensorOptController {
-    constructor(@inject(TYPES.StorageService) private storageService: StorageService) {
+    constructor(@inject(TYPES.TempSensorOptService) private tempSensorOptService: TempSensorOptService) {
     }
 
     @httpGet('/')
     public async getSensorOpts() {
-        await this.storageService.isConnected;
-        return (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
+        return this.tempSensorOptService.getSensorOpts();
     }
 
     @httpGet('/:id')
     public async getSensorOpt(request: Request, response: Response) {
-        await this.storageService.isConnected;
-        const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
-        const item = result.find(v => v.sensor_id === request.params.id);
+        const item = await this.tempSensorOptService.getSensorOpt(request.params.id);
         if (item) {
             return item;
         } else {
@@ -33,32 +28,16 @@ export class SensorOptController {
     }
 
     @httpPost('/')
-    public async newSensorOpt(request: Request) {
-        await this.storageService.isConnected;
-        const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
+    public async addOrUpdate(request: Request) {
         const validated = this.getValidatedItemFromBody(request);
-
-        if (validated.sensor_id) {
-            const item = result.find(v => v.sensor_id === request.params.id);
-            if (item) {
-                item.sensor_type = validated.sensor_type;
-            } else {
-                result.push(validated);
-            }
-            await this.storageService.set<SensorOpt[]>(StorageSensorOptsKey, result);
-        }
-
+        this.tempSensorOptService.addOrUpdateSensorOpt(validated);
         return validated;
     }
 
     @httpDelete('/:id')
-    public async deleteUser(request: Request, response: Response) {
-        await this.storageService.isConnected;
-        const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
-        const item =  result.find(v => v.sensor_id === request.params.id);
+    public async delete(request: Request, response: Response) {
+        const item = await this.tempSensorOptService.deleteSensorOpt(request.params.id);
         if (item) {
-            const newResult = result.filter(i => i !== item);
-            await this.storageService.set<SensorOpt[]>(StorageSensorOptsKey, newResult);
             return item;
         } else {
             response.status(404);
