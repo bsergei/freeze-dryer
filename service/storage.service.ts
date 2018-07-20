@@ -37,4 +37,12 @@ export class StorageService {
             });
         });
     }
+
+    public reset() {
+        return new Promise<void>((resolve, reject) => {
+            this.client.flushdb(() => {
+                resolve();
+            });
+        });
+    }
 }

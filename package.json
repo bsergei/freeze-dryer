@@ -18,7 +18,8 @@
     "morgan": "1.9.0",
     "pigpio": "^1.1.0",
     "redis": "^2.8.0",
-    "reflect-metadata": "0.1.12"
+    "reflect-metadata": "0.1.12",
+    "serve-static": "^1.13.2"
   },
   "devDependencies": {
     "@types/body-parser": "1.17.0",
@@ -28,6 +29,7 @@
     "@types/morgan": "1.7.35",
     "@types/pigpio": "^0.4.2",
     "@types/redis": "^2.8.6",
+    "@types/serve-static": "^1.13.2",
     "ts-node": "6.2.0",
     "typescript": "2.7.2"
   }

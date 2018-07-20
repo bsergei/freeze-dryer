@@ -10,12 +10,14 @@ import { TempSensorOptService } from './service/temp-sensor-opt.service';
 import { SensorsStatusService } from './service/sensors-status.service';
 import { InfluxService } from './service/influx.service';
 import { GpioService } from './service/gpio.service';
+import * as serveStatic from 'serve-static';
 
 import './controller/sensor-temp.controller';
 import './controller/sensor-type.controller';
 import './controller/sensor-opt.controller';
 import './controller/gpio.controller';
 import './controller/sensors-status.controller';
+import './controller/storage.controller';
 
 // load everything needed to the Container
 let container = new Container();
@@ -30,6 +32,7 @@ container.bind<GpioService>(TYPES.GpioService).to(GpioService);
 let server = new InversifyExpressServer(container);
 
 server.setConfig((app) => {
+  app.use(serveStatic(__dirname + '/public'));
   app.use(cors());
   app.use(bodyParser.urlencoded({
     extended: true
@@ -38,7 +41,7 @@ server.setConfig((app) => {
 });
 
 let serverInstance = server.build();
-serverInstance.listen(3030);
+serverInstance.listen(80);
 
 const storageService = container.get<StorageService>(TYPES.StorageService);
 storageService.isConnected.then(async r => {
