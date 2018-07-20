@@ -41,3 +41,5 @@ typings
 temp
 
 package-lock.json
+
+dist
