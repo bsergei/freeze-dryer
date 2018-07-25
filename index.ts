@@ -41,19 +41,21 @@ server.setConfig((app) => {
 });
 
 let serverInstance = server.build();
-serverInstance.listen(80);
+
+const influxService = container.get<InfluxService>(TYPES.InfluxService);
+const writeSensorStatusFunc = async () => {
+  await influxService.writeSensorStatus();
+  setTimeout(() => writeSensorStatusFunc(), 5000);
+}
 
 const storageService = container.get<StorageService>(TYPES.StorageService);
 storageService.isConnected.then(async r => {
   if (r) {    
     console.log('Redis connected successfully');
+    await writeSensorStatusFunc();
+    console.log('Sensors data sender started successfully');
   }
 });
 
-const influxService = container.get<InfluxService>(TYPES.InfluxService);
-setInterval(async () => {
-  await influxService.writeTemperatures();
-  console.log('Influx: sent sensor data');
-}, 10000);
-
-console.log('Server started on port 3030 :)');
+serverInstance.listen(80);
+console.log('Server started on port 80');

@@ -30,8 +30,9 @@ export class InfluxService {
         });
     }
 
-    public async writeTemperatures() {
+    public async writeSensorStatus() {
         var result = await this.sensorsStatus.getSensorsStatus();
+        await this.sensorsStatus.saveInCache(result);
 
         const points: influx.IPoint[] = [];
         for (const t of result.temp_sensors) {
@@ -48,6 +49,23 @@ export class InfluxService {
 
         if (points.length) {
             await this.influxDb.writeMeasurement('temperature', points)
+        }
+
+        const relayPoints: influx.IPoint[] = [];
+        for (const gpio of result.gpios) {
+            relayPoints.push({
+                measurement: 'relay',
+                tags: {
+                    type: gpio.id
+                },
+                fields: {
+                    value: gpio.value
+                }
+            });
+        }
+
+        if (relayPoints.length) {
+            await this.influxDb.writeMeasurement('relay', relayPoints)
         }
     };
 }

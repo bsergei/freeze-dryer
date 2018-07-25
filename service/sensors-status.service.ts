@@ -5,6 +5,9 @@ import TYPES from "../constant/types";
 import { SensorTypes } from "../model/sensor-type.model";
 import { SensorsStatus, SensorTempConnected } from "../model/sensors-status.model";
 import { GpioService } from "./gpio.service";
+import { StorageService } from "./storage.service";
+
+const StorageSensorStatusKey = 'storage:sensor-status';
 
 @injectable()
 export class SensorsStatusService {
@@ -12,11 +15,13 @@ export class SensorsStatusService {
     constructor(
         @inject(TYPES.TempSensorService) private tempSensorService: TempSensorService,
         @inject(TYPES.TempSensorOptService) private sensorOptService: TempSensorOptService,
-        @inject(TYPES.GpioService) private gpioService: GpioService) {
+        @inject(TYPES.GpioService) private gpioService: GpioService,
+        @inject(TYPES.StorageService) private storageService: StorageService) {
     }
 
     public async getSensorsStatus() {
         const result: SensorsStatus = {
+            asOfDate: new Date(),
             temp_sensors: [],
             gpios: this.gpioService.getAll()
         }
@@ -51,5 +56,13 @@ export class SensorsStatusService {
         }
 
         return result;
+    }
+
+    public saveInCache(status: SensorsStatus) {
+        return this.storageService.set<SensorsStatus>(StorageSensorStatusKey, status);
+    }
+
+    public getFromCache() {
+        return this.storageService.get<SensorsStatus>(StorageSensorStatusKey);
     }
 }

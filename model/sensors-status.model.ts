@@ -8,6 +8,7 @@ export interface SensorTempConnected {
 }
 
 export interface SensorsStatus {
+    asOfDate: Date;
     temp_sensors: SensorTempConnected[];
     gpios: GpioStatus[];
 }

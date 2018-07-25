@@ -12,7 +12,11 @@ export class SensorsStatusController {
   }
 
   @httpGet('/')
-  public get(req: Request) {
-      return this.sensorsStatusService.getSensorsStatus();
+  public async get(req: Request) {
+      let result = await this.sensorsStatusService.getFromCache();
+      if (!result) {
+        result = await this.sensorsStatusService.getSensorsStatus();
+      }
+      return result;
   }
 }
