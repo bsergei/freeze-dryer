@@ -6,13 +6,11 @@ import { Request, Response } from 'express';
 import TYPES from '../constant/types';
 import { SensorOpt } from '../model/sensor-opt.model';
 import { TempSensorOptService } from '../service/temp-sensor-opt.service';
-import { StorageService } from '../service/storage.service';
 
 @controller('/api/sensor/opt')
 export class SensorOptController {
     constructor(
-        @inject(TYPES.TempSensorOptService) private tempSensorOptService: TempSensorOptService,
-        @inject(TYPES.StorageService) private storageService: StorageService) {
+        @inject(TYPES.TempSensorOptService) private tempSensorOptService: TempSensorOptService) {
     }
 
     @httpGet('/')

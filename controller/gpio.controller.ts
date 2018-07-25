@@ -16,12 +16,17 @@ export class GpioController {
     constructor(@inject(TYPES.GpioService) private gpioService: GpioService) {
     }
 
-    @httpGet('/:id')
-    public async getById(request: Request, response: Response) {
-        return this.gpioService.read(request.params.id);
+    @httpGet('/all')
+    public async getAll(request: Request, response: Response) {
+        return this.gpioService.getAll();
     }
 
-    @httpGet('/:id/:value')
+    @httpGet('/port/:id')
+    public async getById(request: Request, response: Response) {
+        return this.gpioService.get(Number(request.params.id));
+    }
+
+    @httpGet('/port/:id/:value')
     public async update(request: Request, response: Response) {
         const value = request.params.value;
         let boolValue: boolean;
@@ -35,6 +40,6 @@ export class GpioController {
             return;
         }
 
-        this.gpioService.switch(request.params.id, boolValue);
+        this.gpioService.set(Number(request.params.id), boolValue);
     }
 }

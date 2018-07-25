@@ -1,24 +1,97 @@
 import * as pigpio from 'pigpio';
 import { injectable } from 'inversify';
+import { GpioStatus } from '../model/gpio-status.model';
+
+export interface GpioDescriptor {
+    port: number,
+    id: string,
+    name: string,
+    pin: pigpio.Gpio,
+    zeroValue: boolean
+}
+
+const pins = [
+    {
+        port: 13,
+        id: 'compressor',
+        name: 'Compressor',
+        pin: new pigpio.Gpio(6, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+        zeroValue: true
+    },
+    {
+        port: 6,
+        id: 'vacuum',
+        name: 'Vacuum ',
+        pin: new pigpio.Gpio(13, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+        zeroValue: true
+    },
+    {
+        port: 5,
+        id: 'fan',
+        name: 'Fan and lights',
+        pin: new pigpio.Gpio(5, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+        zeroValue: true
+    },
+    {
+        port: 0,
+        id: 'drain_valve',
+        name: 'Drain Valve',
+        pin: new pigpio.Gpio(0, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+        zeroValue: true
+    },
+    {
+        port: 19,
+        id: 'heater',
+        name: 'Heater',
+        pin: new pigpio.Gpio(19, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+        zeroValue: true
+    },
+    {
+        port: 26,
+        id: 'thawing',
+        name: 'Thawing',
+        pin: new pigpio.Gpio(26, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+        zeroValue: true
+    }
+];
+
+// All off.
+for (const pin of pins) {
+    pin.pin.digitalWrite(pin.zeroValue === false ? 0 : 1);
+}
 
 @injectable()
 export class GpioService {
 
-    private pins: {
-        [pin: number]: pigpio.Gpio
-    } = {
-    }
-    
     constructor() {
-        this.pins[17] = new pigpio.Gpio(17, { mode: pigpio.Gpio.OUTPUT });
-        this.pins[27] = new pigpio.Gpio(27, { mode: pigpio.Gpio.OUTPUT });
     }
 
-    public switch(pin: number, status: boolean) {
-        this.pins[pin].digitalWrite(status ? 1 : 0);
+    public set(port: number, status: boolean) {
+        const pinConfig = pins.find(_ => _.port === port);
+        pinConfig.pin.digitalWrite(status === pinConfig.zeroValue ? 0 : 1);
     }
 
-    public read(pin: number) {
-        return this.pins[pin].digitalRead() === 0 ? false : true;
+    public get(port: number) {
+        const pinConfig = pins.find(_ => _.port === port);
+        return this.getOnOffState(pinConfig);
+    }
+
+    public getAll() {
+        const result: GpioStatus[] = [];
+
+        for (const pinConfig of pins) {
+            result.push({
+                port: pinConfig.port,
+                id: pinConfig.id,
+                name: pinConfig.name,
+                value: this.getOnOffState(pinConfig)
+            });
+        }
+        
+        return result;
+    }
+
+    private getOnOffState(pinConfig: GpioDescriptor) {
+        return pinConfig.pin.digitalRead() === 0 ? pinConfig.zeroValue : !pinConfig.zeroValue;
     }
 }

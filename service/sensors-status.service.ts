@@ -4,18 +4,21 @@ import { TempSensorOptService } from "./temp-sensor-opt.service";
 import TYPES from "../constant/types";
 import { SensorTypes } from "../model/sensor-type.model";
 import { SensorsStatus, SensorTempConnected } from "../model/sensors-status.model";
+import { GpioService } from "./gpio.service";
 
 @injectable()
 export class SensorsStatusService {
 
     constructor(
         @inject(TYPES.TempSensorService) private tempSensorService: TempSensorService,
-        @inject(TYPES.TempSensorOptService) private sensorOptService: TempSensorOptService) {
+        @inject(TYPES.TempSensorOptService) private sensorOptService: TempSensorOptService,
+        @inject(TYPES.GpioService) private gpioService: GpioService) {
     }
 
     public async getSensorsStatus() {
         const result: SensorsStatus = {
-            temp_sensors: []
+            temp_sensors: [],
+            gpios: this.gpioService.getAll()
         }
         
         const sensorOpts = await this.sensorOptService.getSensorOpts();
