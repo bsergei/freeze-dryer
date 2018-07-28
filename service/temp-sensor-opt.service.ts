@@ -1,6 +1,5 @@
-import { injectable, inject } from "inversify";
+import { injectable } from "inversify";
 import { StorageService } from "./storage.service";
-import TYPES from "../constant/types";
 import { SensorOpt } from "../model/sensor-opt.model";
 
 
@@ -9,7 +8,7 @@ const StorageSensorOptsKey = 'storage:sensor-opts';
 @injectable()
 export class TempSensorOptService {
 
-    constructor(@inject(TYPES.StorageService) private storageService: StorageService) {
+    constructor(private storageService: StorageService) {
     }
 
     public async getSensorOpts() {

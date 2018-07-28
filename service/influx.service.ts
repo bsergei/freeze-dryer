@@ -1,7 +1,6 @@
 import * as influx from "influx";
-import { injectable, inject } from "inversify";
+import { injectable } from "inversify";
 import { SensorsStatusService } from "./sensors-status.service";
-import TYPES from "../constant/types";
 
 @injectable()
 export class InfluxService {
@@ -9,7 +8,7 @@ export class InfluxService {
     private influxDb: influx.InfluxDB;
 
     constructor(
-        @inject(TYPES.SensorsStatusService) private sensorsStatus: SensorsStatusService) {
+        private sensorsStatus: SensorsStatusService) {
         this.influxDb = new influx.InfluxDB({
             host: 'localhost',
             port: 8086,

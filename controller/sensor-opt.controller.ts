@@ -1,16 +1,14 @@
 import {
     controller, httpGet, httpPost, httpDelete
 } from 'inversify-express-utils';
-import { inject } from 'inversify';
 import { Request, Response } from 'express';
-import TYPES from '../constant/types';
 import { SensorOpt } from '../model/sensor-opt.model';
 import { TempSensorOptService } from '../service/temp-sensor-opt.service';
 
 @controller('/api/sensor/opt')
 export class SensorOptController {
     constructor(
-        @inject(TYPES.TempSensorOptService) private tempSensorOptService: TempSensorOptService) {
+        private tempSensorOptService: TempSensorOptService) {
     }
 
     @httpGet('/')

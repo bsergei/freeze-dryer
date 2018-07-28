@@ -3,8 +3,6 @@ import {
 } from 'inversify-express-utils';
 import { Request, Response } from 'express';
 import { GpioService } from '../service/gpio.service';
-import { inject } from 'inversify';
-import TYPES from '../constant/types';
 
 export interface Gpio {
     id: string,
@@ -13,7 +11,7 @@ export interface Gpio {
 
 @controller('/api/gpio')
 export class GpioController {
-    constructor(@inject(TYPES.GpioService) private gpioService: GpioService) {
+    constructor(private gpioService: GpioService) {
     }
 
     @httpGet('/all')

@@ -9,13 +9,14 @@ export class StorageService {
     constructor() {
         this.clientInstance = new Promise<redis.RedisClient>((resolve, reject) => {
             const client = redis.createClient();
-            console.log('Redis client created')
-            
+            console.log('Redis client created');
+
             client.on("error", function (err) {
                 console.log("Error " + err);
             });
         
             client.on('connect', args => {
+                console.log('Redis client connected');
                 resolve(client);
             });
         });

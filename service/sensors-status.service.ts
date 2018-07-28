@@ -1,7 +1,6 @@
-import { injectable, inject } from "inversify";
+import { injectable } from "inversify";
 import { TempSensorService } from "./temp-sensor.service";
 import { TempSensorOptService } from "./temp-sensor-opt.service";
-import TYPES from "../constant/types";
 import { SensorTypes } from "../model/sensor-type.model";
 import { SensorsStatus, SensorTempConnected } from "../model/sensors-status.model";
 import { GpioService } from "./gpio.service";
@@ -14,11 +13,11 @@ const StorageSensorStatusKey = 'storage:sensor-status';
 export class SensorsStatusService {
 
     constructor(
-        @inject(TYPES.TempSensorService) private tempSensorService: TempSensorService,
-        @inject(TYPES.TempSensorOptService) private sensorOptService: TempSensorOptService,
-        @inject(TYPES.GpioService) private gpioService: GpioService,
-        @inject(TYPES.AdcService) private adcService: AdcService,
-        @inject(TYPES.StorageService) private storageService: StorageService) {
+        private tempSensorService: TempSensorService,
+        private sensorOptService: TempSensorOptService,
+        private gpioService: GpioService,
+        private adcService: AdcService,
+        private storageService: StorageService) {
     }
 
     public async getSensorsStatus() {
