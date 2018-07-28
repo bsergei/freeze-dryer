@@ -11,6 +11,7 @@ import { SensorsStatusService } from './service/sensors-status.service';
 import { InfluxService } from './service/influx.service';
 import { GpioService } from './service/gpio.service';
 import * as serveStatic from 'serve-static';
+import { AdcService } from './service/adc.service';
 
 import './controller/sensor-temp.controller';
 import './controller/sensor-type.controller';
@@ -21,12 +22,13 @@ import './controller/storage.controller';
 
 // load everything needed to the Container
 let container = new Container();
-container.bind<TempSensorService>(TYPES.TempSensorService).to(TempSensorService);
-container.bind<StorageService>(TYPES.StorageService).to(StorageService);
-container.bind<TempSensorOptService>(TYPES.TempSensorOptService).to(TempSensorOptService);
-container.bind<SensorsStatusService>(TYPES.SensorsStatusService).to(SensorsStatusService);
-container.bind<InfluxService>(TYPES.InfluxService).to(InfluxService);
-container.bind<GpioService>(TYPES.GpioService).to(GpioService);
+container.bind<TempSensorService>(TYPES.TempSensorService).to(TempSensorService).inSingletonScope();
+container.bind<StorageService>(TYPES.StorageService).to(StorageService).inSingletonScope();
+container.bind<TempSensorOptService>(TYPES.TempSensorOptService).to(TempSensorOptService).inSingletonScope();
+container.bind<SensorsStatusService>(TYPES.SensorsStatusService).to(SensorsStatusService).inSingletonScope();
+container.bind<InfluxService>(TYPES.InfluxService).to(InfluxService).inSingletonScope();
+container.bind<GpioService>(TYPES.GpioService).to(GpioService).inSingletonScope();
+container.bind<AdcService>(TYPES.AdcService).to(AdcService).inSingletonScope();
 
 // start the server
 let server = new InversifyExpressServer(container);
@@ -46,6 +48,7 @@ const influxService = container.get<InfluxService>(TYPES.InfluxService);
 const writeSensorStatusFunc = async () => {
   try {
     await influxService.writeSensorStatus();
+    console.log(`${new Date()}: Sent sensor data`);
   } catch (e) {
     console.log(e);
   }
@@ -54,7 +57,7 @@ const writeSensorStatusFunc = async () => {
 
 const storageService = container.get<StorageService>(TYPES.StorageService);
 storageService.isConnected.then(async r => {
-  if (r) {    
+  if (r) {
     console.log('Redis connected successfully');
     await writeSensorStatusFunc();
     console.log('Sensors data sender started successfully');

@@ -28,6 +28,8 @@ export class InfluxService {
                 }
             ]
         });
+
+        console.log('InfluxService created');
     }
 
     public async writeSensorStatus() {
@@ -66,6 +68,23 @@ export class InfluxService {
 
         if (relayPoints.length) {
             await this.influxDb.writeMeasurement('relay', relayPoints)
+        }
+
+        const adcsVoltsPoints: influx.IPoint[] = [];
+        for (let adcChannel = 0; adcChannel < result.adcs.length; adcChannel++) {
+            adcsVoltsPoints.push({
+                measurement: 'adc_volts',
+                tags: {
+                    type: 'adc' + adcChannel
+                },
+                fields: {
+                    value: result.adcs[adcChannel]
+                }
+            });
+        }
+
+        if (adcsVoltsPoints.length) {
+            await this.influxDb.writeMeasurement('adc_volts', adcsVoltsPoints)
         }
     };
 }

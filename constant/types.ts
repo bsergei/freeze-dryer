@@ -4,7 +4,8 @@ const TYPES = {
     TempSensorOptService: Symbol.for('TempSensorOptService'),
     SensorsStatusService: Symbol.for('SensorsStatusService'),
     InfluxService: Symbol.for('InfluxService'),
-    GpioService: Symbol.for('GpioService')
+    GpioService: Symbol.for('GpioService'),
+    AdcService: Symbol.for('AdcService'),
 };
 
 export default TYPES;

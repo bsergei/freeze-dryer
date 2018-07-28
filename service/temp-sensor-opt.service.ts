@@ -13,12 +13,10 @@ export class TempSensorOptService {
     }
 
     public async getSensorOpts() {
-        await this.storageService.isConnected;
         return (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
     }
     
     public async getSensorOpt(sensorId: string) {
-        await this.storageService.isConnected;
         const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
         const item = result.find(v => v.sensor_id === sensorId);
         if (item) {
@@ -30,7 +28,6 @@ export class TempSensorOptService {
         if (!opt) {
             return;
         }
-        await this.storageService.isConnected;
         const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
         if (opt.sensor_id) {
             const item = result.find(v => v.sensor_id === opt.sensor_id);
@@ -44,7 +41,6 @@ export class TempSensorOptService {
     }
 
     public async deleteSensorOpt(sensorId: string) {
-        await this.storageService.isConnected;
         const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
         const item =  result.find(v => v.sensor_id === sensorId);
         if (item) {

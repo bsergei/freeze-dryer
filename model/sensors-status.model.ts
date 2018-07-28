@@ -11,4 +11,5 @@ export interface SensorsStatus {
     asOfDate: Date;
     temp_sensors: SensorTempConnected[];
     gpios: GpioStatus[];
+    adcs: number[];
 }

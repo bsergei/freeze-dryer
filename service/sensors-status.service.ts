@@ -6,6 +6,7 @@ import { SensorTypes } from "../model/sensor-type.model";
 import { SensorsStatus, SensorTempConnected } from "../model/sensors-status.model";
 import { GpioService } from "./gpio.service";
 import { StorageService } from "./storage.service";
+import { AdcService } from "./adc.service";
 
 const StorageSensorStatusKey = 'storage:sensor-status';
 
@@ -16,14 +17,24 @@ export class SensorsStatusService {
         @inject(TYPES.TempSensorService) private tempSensorService: TempSensorService,
         @inject(TYPES.TempSensorOptService) private sensorOptService: TempSensorOptService,
         @inject(TYPES.GpioService) private gpioService: GpioService,
+        @inject(TYPES.AdcService) private adcService: AdcService,
         @inject(TYPES.StorageService) private storageService: StorageService) {
     }
 
     public async getSensorsStatus() {
+        const adcsPromise =
+            Promise.all([
+                this.adcService.readAdc(0),
+                this.adcService.readAdc(1),
+                this.adcService.readAdc(2),
+                this.adcService.readAdc(3)
+            ]);
+
         const result: SensorsStatus = {
             asOfDate: new Date(),
             temp_sensors: [],
-            gpios: this.gpioService.getAll()
+            gpios: this.gpioService.getAll(),
+            adcs: []
         }
         
         const sensorOpts = await this.sensorOptService.getSensorOpts();
@@ -55,6 +66,7 @@ export class SensorsStatusService {
             result.temp_sensors[i].temperature = temperatureValues[i];
         }
 
+        result.adcs = await adcsPromise;
         return result;
     }
 
