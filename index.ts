@@ -44,7 +44,11 @@ let serverInstance = server.build();
 
 const influxService = container.get<InfluxService>(TYPES.InfluxService);
 const writeSensorStatusFunc = async () => {
-  await influxService.writeSensorStatus();
+  try {
+    await influxService.writeSensorStatus();
+  } catch (e) {
+    console.log(e);
+  }
   setTimeout(() => writeSensorStatusFunc(), 5000);
 }
 
