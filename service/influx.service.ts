@@ -85,5 +85,16 @@ export class InfluxService {
         if (adcsVoltsPoints.length) {
             await this.influxDb.writeMeasurement('adc_volts', adcsVoltsPoints)
         }
+
+        if (result.pressure !== undefined) {
+            await this.influxDb.writeMeasurement('pressure', [
+                { 
+                    measurement: 'pressure',
+                    fields: {
+                        value: result.pressure
+                    }
+                }
+            ])
+        }
     };
 }

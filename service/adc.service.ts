@@ -20,7 +20,7 @@ export class AdcService {
                     address: ADS1x15.address.ADDRESS_0x48,  // i2c address on the bus
         
                     // Defaults for future readings
-                    pga: ADS1x15.pga.PGA_6_144V,            // power-gain-amplifier range
+                    pga: ADS1x15.pga.PGA_4_096V,            // power-gain-amplifier range
                     sps: ADS1x15.spsADS1115.SPS_250         // data rate (samples per second)
                 });
         
@@ -57,6 +57,19 @@ export class AdcService {
             this.adcPromise.then(adc => {
                 this.queue.place(() => {
                     adc.readChannel(ch, (err, value, volts) => {
+                        resolve(volts);
+                        this.queue.next();
+                    });
+                });
+            });
+        });
+    }
+
+    public readDifferential() {
+        return new Promise<number>((resolve, error) => {
+            this.adcPromise.then(adc => {
+                this.queue.place(() => {
+                    adc.readDifferential(ADS1x15.differential.DIFF_2_3, (err, value, volts) => {
                         resolve(volts);
                         this.queue.next();
                     });

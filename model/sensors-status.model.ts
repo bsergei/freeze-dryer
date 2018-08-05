@@ -12,4 +12,5 @@ export interface SensorsStatus {
     temp_sensors: SensorTempConnected[];
     gpios: GpioStatus[];
     adcs: number[];
+    pressure: number;
 }

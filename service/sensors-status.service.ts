@@ -6,6 +6,7 @@ import { SensorsStatus, SensorTempConnected } from "../model/sensors-status.mode
 import { GpioService } from "./gpio.service";
 import { StorageService } from "./storage.service";
 import { AdcService } from "./adc.service";
+import { PressureSensorService } from "./pressure-sensor.service";
 
 const StorageSensorStatusKey = 'storage:sensor-status';
 
@@ -17,6 +18,7 @@ export class SensorsStatusService {
         private sensorOptService: TempSensorOptService,
         private gpioService: GpioService,
         private adcService: AdcService,
+        private pressureService: PressureSensorService,
         private storageService: StorageService) {
     }
 
@@ -33,7 +35,8 @@ export class SensorsStatusService {
             asOfDate: new Date(),
             temp_sensors: [],
             gpios: this.gpioService.getAll(),
-            adcs: []
+            adcs: [],
+            pressure: undefined
         }
         
         const sensorOpts = await this.sensorOptService.getSensorOpts();
@@ -66,6 +69,9 @@ export class SensorsStatusService {
         }
 
         result.adcs = await adcsPromise;
+
+        result.pressure = await this.pressureService.readPressure();
+
         return result;
     }
 

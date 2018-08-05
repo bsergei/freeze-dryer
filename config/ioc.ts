@@ -9,6 +9,8 @@ import { InfluxService } from "../service/influx.service";
 import { GpioService } from "../service/gpio.service";
 import { AdcService } from "../service/adc.service";
 import { SenderService } from "../service/sender.service";
+import { PressureSensorService } from '../service/pressure-sensor.service';
+import { PressureInterpolatorService } from '../service/pressure-interpolator.service';
 
 const container = new Container();
 
@@ -20,5 +22,7 @@ container.bind<InfluxService>(InfluxService).toSelf().inSingletonScope();
 container.bind<GpioService>(GpioService).toSelf().inSingletonScope();
 container.bind<AdcService>(AdcService).toSelf().inSingletonScope();
 container.bind<SenderService>(SenderService).toSelf().inSingletonScope();
+container.bind<PressureSensorService>(PressureSensorService).toSelf().inSingletonScope();
+container.bind<PressureInterpolatorService>(PressureInterpolatorService).toSelf().inSingletonScope();
 
 export { container };
