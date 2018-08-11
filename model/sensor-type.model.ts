@@ -1,9 +1,29 @@
+export type TempSensorTypeId = 'condenser_input'
+  | 'condenser_output'
+  | 'condenser1'
+  | 'condenser2'
+  | 'condenser3'
+  | 'freezer_camera'
+  | 'product'
+  | 'product2'
+  | 'product3'
+  | 'product4'
+  | 'product5'
+  | 'heater'
+  | 'heater2'
+  | 'heater3'
+  | 'heater4'
+  | 'heater5'
+  | 'heater'
+  | 'compressor'
+  | 'vacuum_pump';
+
 export interface SensorType {
-    id: string,
-    display: string
+    id: TempSensorTypeId;
+    display: string;
 }
 
-export const SensorTypes: SensorType[] = [{
+export const sensorTypes: SensorType[] = [{
     id: 'condenser_input',
     display: 'Condenser Input'
   },
@@ -34,10 +54,6 @@ export const SensorTypes: SensorType[] = [{
   {
     id: 'product2',
     display: 'Product 2'
-  },
-  {
-    id: 'product3',
-    display: 'Product 3'
   },
   {
     id: 'product3',

@@ -1,11 +1,11 @@
-import { container } from "../config/ioc";
+import { container } from '../config/ioc';
 
-import { InversifyExpressServer } from "inversify-express-utils";
+import { InversifyExpressServer } from 'inversify-express-utils';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as serveStatic from 'serve-static';
 
-import './../controller';
+import '../controller';
 
 const startWeb = () => {
 
@@ -24,6 +24,6 @@ const startWeb = () => {
     const serverInstance = server.build();
     serverInstance.listen(80);
     console.log('Server started on port 80');
-}
+};
 
-export { startWeb }
+export { startWeb };

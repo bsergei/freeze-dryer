@@ -1,14 +1,14 @@
-import { injectable } from "inversify";
-import { TempSensorService } from "./temp-sensor.service";
-import { TempSensorOptService } from "./temp-sensor-opt.service";
-import { SensorTypes } from "../model/sensor-type.model";
-import { SensorsStatus, SensorTempConnected } from "../model/sensors-status.model";
-import { GpioService } from "./gpio.service";
-import { StorageService } from "./storage.service";
-import { AdcService } from "./adc.service";
-import { PressureSensorService } from "./pressure-sensor.service";
+import { injectable } from 'inversify';
+import { TempSensorService } from './temp-sensor.service';
+import { TempSensorOptService } from './temp-sensor-opt.service';
+import { sensorTypes } from '../model/sensor-type.model';
+import { SensorsStatus, SensorTempConnected } from '../model/sensors-status.model';
+import { GpioService } from './gpio.service';
+import { StorageService } from './storage.service';
+import { AdcService } from './adc.service';
+import { PressureSensorService } from './pressure-sensor.service';
 
-const StorageSensorStatusKey = 'storage:sensor-status';
+const storageSensorStatusKey = 'storage:sensor-status';
 
 @injectable()
 export class SensorsStatusService {
@@ -37,16 +37,16 @@ export class SensorsStatusService {
             gpios: this.gpioService.getAll(),
             adcs: [],
             pressure: undefined
-        }
-        
+        };
+
         const sensorOpts = await this.sensorOptService.getSensorOpts();
         const sensorIds = await this.tempSensorService.getSensors();
-        for (const sensorType of SensorTypes) {
+        for (const sensorType of sensorTypes) {
             const tempSensor: SensorTempConnected = {
                 sensor_id: undefined,
                 sensor_type: sensorType,
                 temperature: 0
-            }
+            };
             const sensorOpt = sensorOpts.find(v => v.sensor_type === sensorType.id);
             if (sensorOpt) {
                 tempSensor.sensor_id = sensorIds.find(v => v === sensorOpt.sensor_id);
@@ -59,11 +59,11 @@ export class SensorsStatusService {
         }
 
         const temperatureValues = await Promise.all(result.temp_sensors
-            .map(v => v.sensor_id 
-                ? this.tempSensorService.getTemperature(v.sensor_id) 
+            .map(v => v.sensor_id
+                ? this.tempSensorService.getTemperature(v.sensor_id)
                 : Promise.resolve<number>(undefined))
             );
-        
+
         for (let i = 0; i < temperatureValues.length; i++) {
             result.temp_sensors[i].temperature = temperatureValues[i];
         }
@@ -76,10 +76,10 @@ export class SensorsStatusService {
     }
 
     public saveInCache(status: SensorsStatus) {
-        return this.storageService.set<SensorsStatus>(StorageSensorStatusKey, status);
+        return this.storageService.set<SensorsStatus>(storageSensorStatusKey, status);
     }
 
     public getFromCache() {
-        return this.storageService.get<SensorsStatus>(StorageSensorStatusKey);
+        return this.storageService.get<SensorsStatus>(storageSensorStatusKey);
     }
 }

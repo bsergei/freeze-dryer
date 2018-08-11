@@ -1,5 +1,5 @@
-import { SensorType } from "./sensor-type.model";
-import { GpioStatus } from "./gpio-status.model";
+import { SensorType } from './sensor-type.model';
+import { GpioStatus } from './gpio-status.model';
 
 export interface SensorTempConnected {
     sensor_type: SensorType;

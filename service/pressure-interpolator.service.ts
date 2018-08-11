@@ -14,7 +14,7 @@ class Point {
 
 class LinearInterpolator {
 
-    private sPoints: Point[]
+    private sPoints: Point[];
 
     constructor(points: Point[]) {
         this.sPoints = points.sort((a, b) => {

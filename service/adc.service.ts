@@ -18,21 +18,21 @@ export class AdcService {
                     i2c,                                    // i2c interface
                     chip: ADS1x15.chips.IC_ADS1115,         // chip model
                     address: ADS1x15.address.ADDRESS_0x48,  // i2c address on the bus
-        
+
                     // Defaults for future readings
                     pga: ADS1x15.pga.PGA_4_096V,            // power-gain-amplifier range
                     sps: ADS1x15.spsADS1115.SPS_250         // data rate (samples per second)
                 });
-        
+
                 resolve(adc);
             });
         });
-        
+
         this.queue = new Queue();
 
         console.log('ADC Service created');
     }
-    
+
     public readAdc(channel: number) {
         let ch;
         switch (channel) {
@@ -50,7 +50,7 @@ export class AdcService {
                 break;
         }
         if (ch === undefined) {
-            console.error('Invalid channel specified.')
+            console.error('Invalid channel specified.');
             return Promise.resolve(undefined as number);
         }
         return new Promise<number>((resolve, error) => {

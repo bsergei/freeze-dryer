@@ -1,9 +1,9 @@
-import { injectable } from "inversify";
-import { StorageService } from "./storage.service";
-import { SensorOpt } from "../model/sensor-opt.model";
+import { injectable } from 'inversify';
+import { StorageService } from './storage.service';
+import { SensorOpt } from '../model/sensor-opt.model';
 
 
-const StorageSensorOptsKey = 'storage:sensor-opts';
+const storageSensorOptsKey = 'storage:sensor-opts';
 
 @injectable()
 export class TempSensorOptService {
@@ -12,11 +12,11 @@ export class TempSensorOptService {
     }
 
     public async getSensorOpts() {
-        return (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
+        return (await this.storageService.get<SensorOpt[]>(storageSensorOptsKey)) || [];
     }
-    
+
     public async getSensorOpt(sensorId: string) {
-        const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
+        const result = (await this.storageService.get<SensorOpt[]>(storageSensorOptsKey)) || [];
         const item = result.find(v => v.sensor_id === sensorId);
         if (item) {
             return item;
@@ -27,7 +27,7 @@ export class TempSensorOptService {
         if (!opt) {
             return;
         }
-        const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
+        const result = (await this.storageService.get<SensorOpt[]>(storageSensorOptsKey)) || [];
         if (opt.sensor_id) {
             const item = result.find(v => v.sensor_id === opt.sensor_id);
             if (item) {
@@ -35,16 +35,16 @@ export class TempSensorOptService {
             } else {
                 result.push(opt);
             }
-            await this.storageService.set<SensorOpt[]>(StorageSensorOptsKey, result);
+            await this.storageService.set<SensorOpt[]>(storageSensorOptsKey, result);
         }
     }
 
     public async deleteSensorOpt(sensorId: string) {
-        const result = (await this.storageService.get<SensorOpt[]>(StorageSensorOptsKey)) || [];
+        const result = (await this.storageService.get<SensorOpt[]>(storageSensorOptsKey)) || [];
         const item =  result.find(v => v.sensor_id === sensorId);
         if (item) {
             const newResult = result.filter(i => i !== item);
-            await this.storageService.set<SensorOpt[]>(StorageSensorOptsKey, newResult);
+            await this.storageService.set<SensorOpt[]>(storageSensorOptsKey, newResult);
             return item;
         } else {
             return undefined;

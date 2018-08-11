@@ -2,12 +2,19 @@ import * as pigpio from 'pigpio';
 import { injectable } from 'inversify';
 import { GpioStatus } from '../model/gpio-status.model';
 
+export type Gpios = 'compressor'
+    | 'vacuum'
+    | 'fan'
+    | 'drain_valve'
+    | 'heater'
+    | 'thawing';
+
 export interface GpioDescriptor {
-    port: number,
-    id: string,
-    name: string,
-    pin: pigpio.Gpio,
-    zeroValue: boolean
+    port: number;
+    id: Gpios;
+    name: string;
+    pin: pigpio.Gpio;
+    zeroValue: boolean;
 }
 
 @injectable()
@@ -90,8 +97,12 @@ export class GpioService {
                 value: this.getOnOffState(pinConfig)
             });
         }
-        
+
         return result;
+    }
+
+    public findPin(id: Gpios) {
+        return this.pins.find(_ => _.id === id);
     }
 
     private getOnOffState(pinConfig: GpioDescriptor) {

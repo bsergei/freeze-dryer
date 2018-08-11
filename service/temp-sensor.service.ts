@@ -45,18 +45,10 @@ export class TempSensorService {
         throw new Error('Cannot get temperature');
     }
 
-    private parseData(data: string, options?: ParserOptions) {
-        let parser = (options ? options.parser : undefined) || 'default';
-        if (!this.parsers[parser]) {
-            parser = 'default';
-        }
-        return this.parsers[parser](data);
-    }
-
     public getTemperatureSync(sensor: string, options?: ParserOptions) {
         const data = fs.readFileSync('/sys/bus/w1/devices/' + sensor + '/w1_slave', 'utf8');
         return this.parseData(data, options);
-    };
+    }
 
     public getSensors(): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
@@ -82,7 +74,7 @@ export class TempSensorService {
                 }
 
                 let result: number | undefined;
-                try {                    
+                try {
                     result = this.parseData(data, options);
                 } catch (e) {
                     reject(new Error('Cannot read temperature for sensor ' + sensor));
@@ -97,5 +89,13 @@ export class TempSensorService {
                 resolve(result);
             });
         });
-    };
+    }
+
+    private parseData(data: string, options?: ParserOptions) {
+        let parser = (options ? options.parser : undefined) || 'default';
+        if (!this.parsers[parser]) {
+            parser = 'default';
+        }
+        return this.parsers[parser](data);
+    }
 }

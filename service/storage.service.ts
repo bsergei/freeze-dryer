@@ -1,4 +1,4 @@
-import { injectable } from "inversify";
+import { injectable } from 'inversify';
 import * as redis from 'redis';
 
 @injectable()
@@ -11,17 +11,17 @@ export class StorageService {
             const client = redis.createClient();
             console.log('Redis client created');
 
-            client.on("error", function (err) {
-                console.log("Error " + err);
+            client.on('error', function (err) {
+                console.log('Error ' + err);
             });
-        
+
             client.on('connect', args => {
                 console.log('Redis client connected');
                 resolve(client);
             });
         });
-        
-        console.log('StorageService created')
+
+        console.log('StorageService created');
     }
 
     public get isConnected() {

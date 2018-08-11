@@ -7,8 +7,7 @@
     "class-name": true,
     "comment-format": [
       true,
-      "check-space",
-      "check-lowercase"
+      "check-space"
     ],
     "curly": true,
     "eofline": true,
@@ -17,7 +16,7 @@
       true,
       "spaces"
     ],
-    "interface-name": true,
+    "interface-name": false,
     "jsdoc-format": true,
     "label-position": true,
     "label-undefined": true,
@@ -33,7 +32,7 @@
       "variables-before-functions"
     ],
     "no-arg": true,
-    "no-bitwise": true,
+    "no-bitwise": false,
     "no-conditional-assignment": true,
     "no-consecutive-blank-lines": false,
     "no-console": [
@@ -62,7 +61,7 @@
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "no-var-requires": true,
-    "object-literal-sort-keys": true,
+    "object-literal-sort-keys": false,
     "one-line": [
       true,
       "check-open-brace",

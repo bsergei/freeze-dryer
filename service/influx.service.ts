@@ -1,6 +1,6 @@
-import * as influx from "influx";
-import { injectable } from "inversify";
-import { SensorsStatusService } from "./sensors-status.service";
+import * as influx from 'influx';
+import { injectable } from 'inversify';
+import { SensorsStatusService } from './sensors-status.service';
 
 @injectable()
 export class InfluxService {
@@ -32,7 +32,7 @@ export class InfluxService {
     }
 
     public async writeSensorStatus() {
-        var result = await this.sensorsStatus.getSensorsStatus();
+        const result = await this.sensorsStatus.getSensorsStatus();
         await this.sensorsStatus.saveInCache(result);
 
         const points: influx.IPoint[] = [];
@@ -49,7 +49,7 @@ export class InfluxService {
         }
 
         if (points.length) {
-            await this.influxDb.writeMeasurement('temperature', points)
+            await this.influxDb.writeMeasurement('temperature', points);
         }
 
         const relayPoints: influx.IPoint[] = [];
@@ -66,7 +66,7 @@ export class InfluxService {
         }
 
         if (relayPoints.length) {
-            await this.influxDb.writeMeasurement('relay', relayPoints)
+            await this.influxDb.writeMeasurement('relay', relayPoints);
         }
 
         const adcsVoltsPoints: influx.IPoint[] = [];
@@ -83,18 +83,18 @@ export class InfluxService {
         }
 
         if (adcsVoltsPoints.length) {
-            await this.influxDb.writeMeasurement('adc_volts', adcsVoltsPoints)
+            await this.influxDb.writeMeasurement('adc_volts', adcsVoltsPoints);
         }
 
         if (result.pressure !== undefined) {
             await this.influxDb.writeMeasurement('pressure', [
-                { 
+                {
                     measurement: 'pressure',
                     fields: {
                         value: result.pressure
                     }
                 }
-            ])
+            ]);
         }
-    };
+    }
 }
