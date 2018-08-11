@@ -29,6 +29,7 @@ export interface CompressorWorkerParams {
     minCondenserOutputTemp: number;
     minFreezerCameraTemp: number;
     maxCompressorTemp: number;
+    debounceTime: number;
 }
 
 export class CompressorWorker extends UnitController implements UnitWorker {
@@ -50,17 +51,18 @@ export class CompressorWorker extends UnitController implements UnitWorker {
                 new MaxValueProtector(
                     tempParamFactory.create('compressor'),
                     p.maxCompressorTemp)),
-            new ActivateDebouncerGuard(5 * 60)
+            new ActivateDebouncerGuard(p.debounceTime)
         );
     }
 
     public getId(): string {
-        return 'compressor';
+        return this.compressorUnit.getId();
     }
 
     public async onStart() {
-        this.compressorUnit.activate();
+        await this.compressorUnit.activate();
         this.lastActivated = UnitController.now();
+        this.start();
     }
 
     public async onTick() {
@@ -68,8 +70,8 @@ export class CompressorWorker extends UnitController implements UnitWorker {
     }
 
     public async onStop() {
-        this.compressorUnit.deactivate();
+        this.stop();
+        await this.compressorUnit.deactivate();
         this.lastDeactivated = UnitController.now();
     }
-
 }

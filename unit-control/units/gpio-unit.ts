@@ -4,8 +4,12 @@ import { GpioService, GpioDescriptor, Gpios } from '../../service/gpio.service';
 export class GpioUnit implements Unit {
     private pin: GpioDescriptor;
 
-    constructor(private gpioService: GpioService, id: Gpios) {
+    constructor(private gpioService: GpioService, private id: Gpios) {
         this.pin = gpioService.findPin(id);
+    }
+
+    public getId(): string {
+        return this.id;
     }
 
     public async getIsActive(): Promise<boolean> {

@@ -23,6 +23,8 @@ export class UnitController {
     protected lastDeactivated: number;
     protected resolutionSeconds: number;
 
+    protected isRunning = false;
+
     private lastUpdated: number;
 
     public static now() {
@@ -40,7 +42,19 @@ export class UnitController {
         }
     }
 
+    protected start() {
+        this.isRunning = true;
+    }
+
+    protected stop() {
+        this.isRunning = false;
+    }
+
     protected async tick() {
+        if (!this.isRunning) {
+            return UnitControllerResult.Unchanged;
+        }
+
         if (this.lastUpdated === undefined) {
             this.lastUpdated = UnitController.now();
         }

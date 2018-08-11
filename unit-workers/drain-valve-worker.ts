@@ -18,7 +18,7 @@ export class DrainValveWorker implements UnitWorker {
     }
 
     public getId(): string {
-        return 'drain_valve';
+        return this.drainValveUnit.getId();
     }
 
     public async onStart(): Promise<void> {

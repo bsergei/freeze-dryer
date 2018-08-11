@@ -1,12 +1,13 @@
 import { UnitWorkerService } from '../service/unit-worker.service';
 import {
-    controller, httpGet
+    controller, httpGet, httpPost
 } from 'inversify-express-utils';
 import { Request, Response } from 'express';
-import { CompressorWorkerFactory } from '../unit-workers/compressor-worker';
-import { VacuumWorkerFactory } from '../unit-workers/vacuum-worker';
-import { HeaterWorkerFactory } from '../unit-workers/heater-worker';
+import { CompressorWorkerFactory, CompressorWorkerParams } from '../unit-workers/compressor-worker';
+import { VacuumWorkerFactory, VacuumWorkerParams } from '../unit-workers/vacuum-worker';
+import { HeaterWorkerFactory, HeaterWorkerParams } from '../unit-workers/heater-worker';
 import { DrainValveWorkerFactory } from '../unit-workers/drain-valve-worker';
+import { Gpios } from '../service/gpio.service';
 
 @controller('/api/unit-worker')
 export class UnitWorkerController {
@@ -29,66 +30,52 @@ export class UnitWorkerController {
         await this.unitWorkerService.stopAll();
     }
 
-    @httpGet('/start/:id')
+    @httpPost('/start/:id')
     public async startWorker(req: Request, resp: Response) {
-        const id = req.params.id as string;
+        const id = req.params.id as Gpios;
+        const param = req.body;
 
         switch (id) {
             case 'compressor':
-                this.addCompressor();
+                this.addCompressor(param);
                 break;
 
             case 'vacuum':
-                this.addVacuum();
+                this.addVacuum(param);
                 break;
 
             case 'heater':
-                this.addHeater();
+                this.addHeater(param);
                 break;
 
             case 'drain_valve':
-                this.addDrainValve();
+                this.addDrainValve(param);
                 break;
         }
     }
 
-    @httpGet('/stop/:id')
+    @httpPost('/stop/:id')
     public async stopWorker(req: Request, resp: Response) {
         const id = req.params.id as string;
         this.unitWorkerService.stop(id);
     }
 
-    private addCompressor() {
-        const unitWorker = this.compressorWorkerFactory.create({
-            maxCompressorTemp: 60.0,
-            minCondenserOutputTemp: -30.0,
-            minFreezerCameraTemp: -30.0
-        });
+    private addCompressor(param: CompressorWorkerParams) {
+        const unitWorker = this.compressorWorkerFactory.create(param);
         this.unitWorkerService.add(unitWorker);
     }
 
-    private addVacuum() {
-        const unitWorker = this.vacuumWorkerFactory.create({
-            targetPressure: 500,
-            histeresis: 100
-        });
+    private addVacuum(param: VacuumWorkerParams) {
+        const unitWorker = this.vacuumWorkerFactory.create(param);
         this.unitWorkerService.add(unitWorker);
     }
 
-    private addHeater() {
-        const unitWorker = this.heaterWorkerFactory.create({
-            tempSensors: [
-                {
-                    tempSensor: 'heater',
-                    targetTemperature: 10.0
-                }
-            ],
-            histeresis: 1.0
-        });
+    private addHeater(param: HeaterWorkerParams) {
+        const unitWorker = this.heaterWorkerFactory.create(param);
         this.unitWorkerService.add(unitWorker);
     }
 
-    private addDrainValve() {
+    private addDrainValve(_param) {
         const unitWorker = this.drainValveWorkerFactory.create();
         this.unitWorkerService.add(unitWorker);
     }

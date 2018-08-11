@@ -44,12 +44,13 @@ export class VacuumWorker extends UnitController implements UnitWorker {
     }
 
     public getId(): string {
-        return 'vacuum';
+        return this.vacuumUnit.getId();
     }
 
     public async onStart() {
-        this.vacuumUnit.activate();
+        await this.vacuumUnit.activate();
         this.lastActivated = UnitController.now();
+        this.start();
     }
 
     public async onTick() {
@@ -57,7 +58,8 @@ export class VacuumWorker extends UnitController implements UnitWorker {
     }
 
     public async onStop() {
-        this.vacuumUnit.deactivate();
+        this.stop();
+        await this.vacuumUnit.deactivate();
         this.lastDeactivated = UnitController.now();
     }
 }

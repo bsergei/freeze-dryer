@@ -52,12 +52,13 @@ export class HeaterWorker extends UnitController implements UnitWorker {
     }
 
     public getId(): string {
-        return 'heater';
+        return this.heaterUnit.getId();
     }
 
     public async onStart() {
-        this.heaterUnit.activate();
+        await this.heaterUnit.activate();
         this.lastActivated = UnitController.now();
+        this.start();
     }
 
     public async onTick() {
@@ -65,8 +66,8 @@ export class HeaterWorker extends UnitController implements UnitWorker {
     }
 
     public async onStop() {
-        this.heaterUnit.deactivate();
+        this.stop();
+        await this.heaterUnit.deactivate();
         this.lastDeactivated = UnitController.now();
     }
-
 }
