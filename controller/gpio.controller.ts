@@ -5,8 +5,8 @@ import { Request, Response } from 'express';
 import { GpioService } from '../service/gpio.service';
 
 export interface Gpio {
-    id: string,
-    state: boolean
+    id: string;
+    state: boolean;
 }
 
 @controller('/api/gpio')
@@ -26,11 +26,11 @@ export class GpioController {
 
     @httpGet('/port/:id/:value')
     public async update(request: Request, response: Response) {
-        const value = request.params.value;
+        const value = Number(request.params.value);
         let boolValue: boolean;
-        if (value == 1) {
+        if (value === 1) {
             boolValue = true;
-        } else if (value == 0) {
+        } else if (value === 0) {
             boolValue = false;
         }
 

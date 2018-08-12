@@ -53,8 +53,8 @@ export class VacuumWorker extends UnitController implements UnitWorker {
         this.start();
     }
 
-    public async onTick() {
-        return await this.tick();
+    public onTick() {
+        return this.tick();
     }
 
     public async onStop() {

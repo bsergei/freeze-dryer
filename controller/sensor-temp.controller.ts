@@ -13,7 +13,7 @@ export class SensorTempController {
   public async get(req: Request) {
     const service = this.tempSensorService;
     const sensors = await service.getSensors();
-    if (req.query && req.query['sensor_id'] !== undefined) {
+    if (req.query && req.query.sensor_id !== undefined) {
       const result = sensors.map(sensorId => {
         return <SensorTemp>{
           sensor_id: sensorId
@@ -38,7 +38,7 @@ export class SensorTempController {
 
   @httpGet('/:id')
   public async getSensorTemp(req: Request) {
-    const sensorId = req.params['id'];
+    const sensorId = req.params.id;
     return <SensorTemp>{
       sensor_id: sensorId,
       temperature: await this.tempSensorService.getTemperature(sensorId)

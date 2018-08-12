@@ -65,7 +65,7 @@ export class CompressorWorker extends UnitController implements UnitWorker {
         this.start();
     }
 
-    public async onTick() {
+    public onTick() {
         return this.tick();
     }
 
