@@ -3,11 +3,14 @@ import {
     controller, httpGet, httpPost
 } from 'inversify-express-utils';
 import { Request, Response } from 'express';
-import { CompressorWorkerFactory, CompressorWorkerParams } from '../unit-workers/compressor-worker';
-import { VacuumWorkerFactory, VacuumWorkerParams } from '../unit-workers/vacuum-worker';
-import { HeaterWorkerFactory, HeaterWorkerParams } from '../unit-workers/heater-worker';
+import { CompressorWorkerFactory } from '../unit-workers/compressor-worker';
+import { VacuumWorkerFactory } from '../unit-workers/vacuum-worker';
+import { HeaterWorkerFactory } from '../unit-workers/heater-worker';
 import { DrainValveWorkerFactory } from '../unit-workers/drain-valve-worker';
 import { Gpios } from '../service/gpio.service';
+import { CompressorWorkerParams } from '../model/compressor-worker-params.model';
+import { VacuumWorkerParams } from '../model/vacuum-worker-params.model';
+import { HeaterWorkerParams } from '../model/heater-worker-params.model';
 
 @controller('/api/unit-worker')
 export class UnitWorkerController {

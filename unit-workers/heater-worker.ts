@@ -7,8 +7,8 @@ import {
 } from '../unit-control';
 
 import { UnitWorker } from './unit-worker';
-import { TempSensorTypeId } from '../model';
 import { injectable } from 'inversify';
+import { HeaterWorkerParams } from '../model/heater-worker-params.model';
 
 @injectable()
 export class HeaterWorkerFactory {
@@ -23,14 +23,6 @@ export class HeaterWorkerFactory {
             this.tempParamFactory,
             p);
     }
-}
-
-export interface HeaterWorkerParams {
-    tempSensors: {
-        tempSensor: TempSensorTypeId,
-        targetTemperature: number
-    }[];
-    histeresis: number;
 }
 
 export class HeaterWorker extends UnitController implements UnitWorker {

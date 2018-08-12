@@ -7,6 +7,7 @@ import {
 
 import { UnitWorker } from './unit-worker';
 import { injectable } from 'inversify';
+import { VacuumWorkerParams } from '../model/vacuum-worker-params.model';
 
 @injectable()
 export class VacuumWorkerFactory {
@@ -21,11 +22,6 @@ export class VacuumWorkerFactory {
             this.pressureParam,
             p);
     }
-}
-
-export interface VacuumWorkerParams {
-    targetPressure: number;
-    histeresis: number;
 }
 
 export class VacuumWorker extends UnitController implements UnitWorker {

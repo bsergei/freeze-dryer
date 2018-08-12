@@ -10,6 +10,7 @@ import {
 
 import { UnitWorker } from './unit-worker';
 import { injectable } from 'inversify';
+import { CompressorWorkerParams } from '../model/compressor-worker-params.model';
 
 @injectable()
 export class CompressorWorkerFactory {
@@ -25,13 +26,6 @@ export class CompressorWorkerFactory {
     }
 }
 
-export interface CompressorWorkerParams {
-    minCondenserOutputTemp: number;
-    minFreezerCameraTemp: number;
-    maxCompressorTemp: number;
-    debounceTime: number;
-}
-
 export class CompressorWorker extends UnitController implements UnitWorker {
 
     constructor(
@@ -43,8 +37,8 @@ export class CompressorWorker extends UnitController implements UnitWorker {
             compressorUnit,
             new AggregatedSwitchChecker(
                 new MinValueProtector(
-                    tempParamFactory.create('condenser_output'),
-                    p.minCondenserOutputTemp),
+                    tempParamFactory.create('condenser1'),
+                    p.minCondenser1Temp),
                 new MinValueProtector(
                     tempParamFactory.create('freezer_camera'),
                     p.minFreezerCameraTemp),

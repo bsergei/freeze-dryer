@@ -30,7 +30,7 @@ export class UnitWorkerService {
         const idx = this.findUnitWorkerIdx(id);
         if (idx >= 0) {
             const unitWorker = this.unitWorkers[idx];
-            this.unitWorkers = this.unitWorkers.splice(idx);
+            this.unitWorkers = this.unitWorkers.splice(idx, 1);
 
             await unitWorker.onStop();
         }

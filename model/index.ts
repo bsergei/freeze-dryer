@@ -3,8 +3,6 @@ export * from './sensor-temp.model';
 export * from './sensor-type.model';
 export * from './sensors-status.model';
 export * from './gpio-status.model';
-export {
-    VacuumWorkerParams,
-    HeaterWorkerParams,
-    CompressorWorkerParams
-} from '../unit-workers';
+export * from './compressor-worker-params.model';
+export * from './heater-worker-params.model';
+export * from './vacuum-worker-params.model';
