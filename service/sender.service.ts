@@ -37,6 +37,6 @@ export class SenderService {
         } catch (e) {
             console.log(e);
         }
-        setTimeout(() => this.writeSensorStatus(), 500);
+        setTimeout(() => this.doUnitWorker(), 500);
     }
 }

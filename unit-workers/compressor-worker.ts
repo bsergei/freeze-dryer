@@ -3,9 +3,10 @@ import {
     TemperatureParamFactory,
     ActivateDebouncerGuard,
     MaxValueProtector,
-    MinValueProtector,
+    // MinValueProtector,
     UnitController,
-    AggregatedSwitchChecker
+    AggregatedSwitchChecker,
+    UnitParamReducer
 } from '../unit-control';
 
 import { UnitWorker } from './unit-worker';
@@ -36,15 +37,17 @@ export class CompressorWorker extends UnitController implements UnitWorker {
         super(
             compressorUnit,
             new AggregatedSwitchChecker(
-                new MinValueProtector(
+                new UnitParamReducer(
                     tempParamFactory.create('condenser1'),
-                    p.minCondenser1Temp),
-                new MinValueProtector(
-                    tempParamFactory.create('freezer_camera'),
-                    p.minFreezerCameraTemp),
+                    p.minCondenser1Temp,
+                    0.5),
+                // new MinValueProtector(
+                //     tempParamFactory.create('freezer_camera'),
+                //     p.minFreezerCameraTemp),
                 new MaxValueProtector(
                     tempParamFactory.create('compressor'),
-                    p.maxCompressorTemp)),
+                    p.maxCompressorTemp)
+                ),
             new ActivateDebouncerGuard(p.debounceTime)
         );
     }

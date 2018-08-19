@@ -13,7 +13,7 @@ export class TimerDeactivator implements StateSwitchChecker {
     }
 
     public async shouldActivate(lastActivated: number, lastDeactivated: number) {
-        return false;
+        return undefined;
     }
 
     public async shouldDeactivate(lastActivated: number, lastDeactivated: number) {

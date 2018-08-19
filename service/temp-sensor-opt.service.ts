@@ -28,26 +28,22 @@ export class TempSensorOptService {
             return;
         }
         const result = (await this.storageService.get<SensorOpt[]>(storageSensorOptsKey)) || [];
-        if (opt.sensor_id) {
-            const item = result.find(v => v.sensor_id === opt.sensor_id);
-            if (item) {
-                item.sensor_type = opt.sensor_type;
-            } else {
-                result.push(opt);
-            }
-            await this.storageService.set<SensorOpt[]>(storageSensorOptsKey, result);
-        }
-    }
 
-    public async deleteSensorOpt(sensorId: string) {
-        const result = (await this.storageService.get<SensorOpt[]>(storageSensorOptsKey)) || [];
-        const item =  result.find(v => v.sensor_id === sensorId);
-        if (item) {
-            const newResult = result.filter(i => i !== item);
-            await this.storageService.set<SensorOpt[]>(storageSensorOptsKey, newResult);
-            return item;
-        } else {
-            return undefined;
+        let idx: number = undefined;
+        do {
+            idx = result.findIndex(v => {
+                return v.sensor_id === opt.sensor_id ||
+                    v.sensor_type === opt.sensor_type;
+            });
+            if (idx >= 0) {
+                result.splice(idx, 1);
+            }
         }
+        while (idx >= 0);
+
+        if (opt.sensor_id && opt.sensor_type) {
+            result.push(opt);
+        }
+        await this.storageService.set<SensorOpt[]>(storageSensorOptsKey, result);
     }
 }

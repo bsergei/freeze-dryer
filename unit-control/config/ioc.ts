@@ -7,6 +7,7 @@ import { ThawingUnit } from '../units/thawing-unit';
 import { VacuumUnit } from '../units/vacuum-unit';
 import { TemperatureParamFactory } from '../sensors/temperature-param';
 import { PressureParam } from '../sensors/pressure-param';
+import { GpioUnit } from '../units/gpio-unit';
 
 export const configureUnitControl = (container: Container) => {
     container.bind<CompressorUnit>(CompressorUnit).toSelf();
@@ -17,4 +18,5 @@ export const configureUnitControl = (container: Container) => {
     container.bind<VacuumUnit>(VacuumUnit).toSelf();
     container.bind<TemperatureParamFactory>(TemperatureParamFactory).toSelf();
     container.bind<PressureParam>(PressureParam).toSelf();
+    container.bind<GpioUnit>(GpioUnit).toSelf().inSingletonScope();
 };

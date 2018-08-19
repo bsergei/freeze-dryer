@@ -10,7 +10,7 @@ export class PressureParam implements ControllableParam {
 
     public async readParamValue(): Promise<number> {
         const sensorStatus = await this.sensorStatus.getFromCache();
-        const value = sensorStatus
+        const value = sensorStatus && sensorStatus
             .pressure;
         return value;
     }

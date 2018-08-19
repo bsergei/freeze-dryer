@@ -1,5 +1,6 @@
 import { injectable } from '../node_modules/inversify';
 import { UnitWorker } from '../unit-workers/unit-worker';
+import { UnitWorkerStatus } from '../model/unit-worker-status.model';
 
 @injectable()
 export class UnitWorkerService {
@@ -30,13 +31,13 @@ export class UnitWorkerService {
         const idx = this.findUnitWorkerIdx(id);
         if (idx >= 0) {
             const unitWorker = this.unitWorkers[idx];
-            this.unitWorkers = this.unitWorkers.splice(idx, 1);
+            this.unitWorkers.splice(idx, 1);
 
             await unitWorker.onStop();
         }
     }
 
-    public getStatus() {
+    public getStatus(): UnitWorkerStatus {
         return {
             runningIds: this.unitWorkers.map(w => w.getId())
         };

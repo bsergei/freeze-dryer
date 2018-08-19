@@ -6,14 +6,14 @@ export class ActivateDebouncerGuard implements StateSwitchGuard {
     }
 
     public async canActivate(lastActivated: number, lastDeactivated: number) {
-        if (lastActivated === undefined) {
+        if (lastDeactivated === undefined) {
             return undefined;
         }
 
-        return UnitController.now() - lastActivated >= this.debounceTimeSeconds;
+        return UnitController.now() - lastDeactivated >= this.debounceTimeSeconds;
     }
 
     public async canDeactivate(lastActivated: number, lastDeactivated: number) {
-        return true;
+        return undefined;
     }
 }

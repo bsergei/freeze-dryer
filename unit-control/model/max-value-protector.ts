@@ -13,12 +13,15 @@ export class MaxValueProtector implements StateSwitchChecker {
     }
 
     public async shouldActivate(lastActivated: number, lastDeactivated: number): Promise<boolean> {
-        const paramValue = await this.unitControlParam.readParamValue();
-        return paramValue < this.maxParamValue;
+        return undefined;
     }
 
     public async shouldDeactivate(lastActivated: number, lastDeactivated: number): Promise<boolean> {
         const paramValue = await this.unitControlParam.readParamValue();
+        if (paramValue === undefined ||
+            paramValue === null) {
+            return undefined;
+        }
         return paramValue >= this.maxParamValue;
     }
 }

@@ -47,8 +47,9 @@ export class StorageService {
             this.clientInstance
                 .then(client =>
                     client.set(key, JSON.stringify(value), (err, reply) => {
-                        client.bgsave();
-                        resolve(true);
+                        client.bgsave(() => {
+                            resolve(true);
+                        });
                     }));
         });
     }

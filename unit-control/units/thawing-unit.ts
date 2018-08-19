@@ -1,10 +1,25 @@
 import { injectable } from 'inversify';
-import { GpioService } from '../../service/gpio.service';
 import { GpioUnit } from './gpio-unit';
+import { Unit } from '../model/unit';
 
 @injectable()
-export class ThawingUnit extends GpioUnit {
-    constructor(gpioService: GpioService) {
-        super(gpioService, 'thawing');
+export class ThawingUnit implements Unit {
+    constructor(private gpioUnit: GpioUnit) {
+    }
+
+    public getId(): string {
+        return 'thawing';
+    }
+
+    public getIsActive(): Promise<boolean> {
+        return this.gpioUnit.getIsActive('thawing');
+    }
+
+    public activate(): Promise<void> {
+        return this.gpioUnit.activate('thawing');
+    }
+
+    public deactivate(): Promise<void> {
+        return this.gpioUnit.deactivate('thawing');
     }
 }

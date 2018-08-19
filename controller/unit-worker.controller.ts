@@ -6,7 +6,6 @@ import { Request, Response } from 'express';
 import { CompressorWorkerFactory } from '../unit-workers/compressor-worker';
 import { VacuumWorkerFactory } from '../unit-workers/vacuum-worker';
 import { HeaterWorkerFactory } from '../unit-workers/heater-worker';
-import { DrainValveWorkerFactory } from '../unit-workers/drain-valve-worker';
 import { Gpios } from '../service/gpio.service';
 import { CompressorWorkerParams } from '../model/compressor-worker-params.model';
 import { VacuumWorkerParams } from '../model/vacuum-worker-params.model';
@@ -18,8 +17,7 @@ export class UnitWorkerController {
         private unitWorkerService: UnitWorkerService,
         private compressorWorkerFactory: CompressorWorkerFactory,
         private vacuumWorkerFactory: VacuumWorkerFactory,
-        private heaterWorkerFactory: HeaterWorkerFactory,
-        private drainValveWorkerFactory: DrainValveWorkerFactory) {
+        private heaterWorkerFactory: HeaterWorkerFactory) {
     }
 
     @httpGet('/status')
@@ -40,19 +38,15 @@ export class UnitWorkerController {
 
         switch (id) {
             case 'compressor':
-                this.addCompressor(param);
+                await this.addCompressor(param);
                 break;
 
             case 'vacuum':
-                this.addVacuum(param);
+                await this.addVacuum(param);
                 break;
 
             case 'heater':
-                this.addHeater(param);
-                break;
-
-            case 'drain_valve':
-                this.addDrainValve(param);
+                await this.addHeater(param);
                 break;
         }
     }
@@ -60,26 +54,21 @@ export class UnitWorkerController {
     @httpPost('/stop/:id')
     public async stopWorker(req: Request, resp: Response) {
         const id = req.params.id as string;
-        this.unitWorkerService.stop(id);
+        await this.unitWorkerService.stop(id);
     }
 
-    private addCompressor(param: CompressorWorkerParams) {
+    private async addCompressor(param: CompressorWorkerParams) {
         const unitWorker = this.compressorWorkerFactory.create(param);
-        this.unitWorkerService.add(unitWorker);
+        await this.unitWorkerService.add(unitWorker);
     }
 
-    private addVacuum(param: VacuumWorkerParams) {
+    private async addVacuum(param: VacuumWorkerParams) {
         const unitWorker = this.vacuumWorkerFactory.create(param);
-        this.unitWorkerService.add(unitWorker);
+        await this.unitWorkerService.add(unitWorker);
     }
 
-    private addHeater(param: HeaterWorkerParams) {
+    private async addHeater(param: HeaterWorkerParams) {
         const unitWorker = this.heaterWorkerFactory.create(param);
-        this.unitWorkerService.add(unitWorker);
-    }
-
-    private addDrainValve(_param) {
-        const unitWorker = this.drainValveWorkerFactory.create();
-        this.unitWorkerService.add(unitWorker);
+        await this.unitWorkerService.add(unitWorker);
     }
 }

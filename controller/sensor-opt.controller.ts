@@ -1,5 +1,5 @@
 import {
-    controller, httpGet, httpPost, httpDelete
+    controller, httpGet, httpPost
 } from 'inversify-express-utils';
 import { Request, Response } from 'express';
 import { SensorOpt } from '../model/sensor-opt.model';
@@ -31,16 +31,6 @@ export class SensorOptController {
         const validated = this.getValidatedItemFromBody(request);
         await this.tempSensorOptService.addOrUpdateSensorOpt(validated);
         return validated;
-    }
-
-    @httpDelete('/:id')
-    public async delete(request: Request, response: Response) {
-        const item = await this.tempSensorOptService.deleteSensorOpt(request.params.id);
-        if (item) {
-            return item;
-        } else {
-            response.status(404);
-        }
     }
 
     private getValidatedItemFromBody(request: Request) {

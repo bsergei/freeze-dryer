@@ -21,7 +21,6 @@ export class NullStateSwitchGuard implements StateSwitchGuard {
 export class UnitController {
     protected lastActivated: number;
     protected lastDeactivated: number;
-    protected resolutionSeconds: number;
 
     protected isRunning = false;
 
@@ -35,7 +34,6 @@ export class UnitController {
         private unit: Unit,
         private stateSwitchChecker: StateSwitchChecker,
         private stateSwitchGuard?: StateSwitchGuard) {
-        this.resolutionSeconds = 1;
         if (this.stateSwitchGuard === undefined
             || this.stateSwitchGuard === null) {
             this.stateSwitchGuard = new NullStateSwitchGuard();
@@ -60,9 +58,6 @@ export class UnitController {
         }
 
         const now = UnitController.now();
-        if ((now - this.lastUpdated) < this.resolutionSeconds) {
-            return UnitControllerResult.Unchanged;
-        }
 
         try {
             const isActive = await this.unit.getIsActive();
@@ -72,7 +67,7 @@ export class UnitController {
                 if (shouldDeactivate === true) {
                     const canDeactivate = await this.stateSwitchGuard
                         .canDeactivate(this.lastActivated, this.lastDeactivated);
-                    if (canDeactivate === true) {
+                    if (canDeactivate !== false) {
                         await this.unit.deactivate();
                         this.lastDeactivated = now;
                         return UnitControllerResult.Deactivated;
@@ -84,7 +79,7 @@ export class UnitController {
                 if (shouldActivate === true) {
                     const canActivate = await this.stateSwitchGuard
                         .canActivate(this.lastActivated, this.lastDeactivated);
-                    if (canActivate === true) {
+                    if (canActivate !== false) {
                         await this.unit.activate();
                         this.lastActivated = now;
                         return UnitControllerResult.Activated;

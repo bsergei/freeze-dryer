@@ -14,14 +14,22 @@ export class UnitParamIncreaser implements StateSwitchChecker {
     public async shouldActivate(
         lastActivated: number,
         lastDeactivated: number) {
-        const currParamValue = await this.unitControlParam.readParamValue();
-        return currParamValue <= (this.targetParamValue - (this.histeresis | 0));
+        const paramValue = await this.unitControlParam.readParamValue();
+        if (paramValue === undefined ||
+            paramValue === null) {
+            return undefined;
+        }
+        return paramValue <= (this.targetParamValue - (this.histeresis | 0));
     }
 
     public async shouldDeactivate(
         lastActivated: number,
         lastDeactivated: number) {
-        const currParamValue = await this.unitControlParam.readParamValue();
-        return currParamValue >= (this.targetParamValue + (this.histeresis | 0));
+        const paramValue = await this.unitControlParam.readParamValue();
+        if (paramValue === undefined ||
+            paramValue === null) {
+            return undefined;
+        }
+        return paramValue >= (this.targetParamValue + (this.histeresis | 0));
     }
 }

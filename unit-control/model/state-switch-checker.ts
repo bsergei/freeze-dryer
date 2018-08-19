@@ -19,19 +19,27 @@ export class AggregatedSwitchChecker implements StateSwitchChecker {
     public async shouldActivate(lastActivated: number, lastDeactivated: number): Promise<boolean> {
         const results = await Promise.all(
             this.checkers.map(
-                checker => checker.shouldDeactivate(lastActivated, lastDeactivated)));
+                checker => checker.shouldActivate(lastActivated, lastDeactivated)));
 
         // Check for ALL are true.
 
-        if (results.length === 0) {
-            return undefined;
-        }
+        let isUndefined = true;
 
         for (const result of results) {
             if (result === false) {
                 return false;
             }
+
+            if (result !== undefined &&
+                result !== null) {
+                isUndefined = false;
+            }
         }
+
+        if (isUndefined === true) {
+            return undefined;
+        }
+
         return true;
     }
 
@@ -40,9 +48,7 @@ export class AggregatedSwitchChecker implements StateSwitchChecker {
             this.checkers.map(
                 checker => checker.shouldDeactivate(lastActivated, lastDeactivated)));
 
-        if (results.length === 0) {
-            return undefined;
-        }
+        let isUndefined = true;
 
         // Check for ANY is true.
 
@@ -50,7 +56,17 @@ export class AggregatedSwitchChecker implements StateSwitchChecker {
             if (result === true) {
                 return true;
             }
+
+            if (result !== undefined &&
+                result !== null) {
+                isUndefined = false;
+            }
         }
+
+        if (isUndefined === true) {
+            return undefined;
+        }
+
         return false;
     }
 }
