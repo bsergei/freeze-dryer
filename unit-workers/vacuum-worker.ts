@@ -29,7 +29,7 @@ export class VacuumWorker extends UnitController implements UnitWorker {
     constructor(
         private vacuumUnit: VacuumUnit,
         pressureParam: PressureParam,
-        p: VacuumWorkerParams) {
+        private p: VacuumWorkerParams) {
         super(
             vacuumUnit,
             new UnitParamReducer(
@@ -57,5 +57,9 @@ export class VacuumWorker extends UnitController implements UnitWorker {
         this.stop();
         await this.vacuumUnit.deactivate();
         this.lastDeactivated = UnitController.now();
+    }
+
+    public getParams() {
+        return this.p;
     }
 }

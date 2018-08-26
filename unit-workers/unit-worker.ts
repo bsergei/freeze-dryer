@@ -5,4 +5,5 @@ export interface UnitWorker {
     onStart(): Promise<void>;
     onTick(): Promise<UnitControllerResult>;
     onStop(): Promise<void>;
+    getParams(): any;
 }

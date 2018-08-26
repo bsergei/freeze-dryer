@@ -32,7 +32,7 @@ export class CompressorWorker extends UnitController implements UnitWorker {
     constructor(
         private compressorUnit: CompressorUnit,
         tempParamFactory: TemperatureParamFactory,
-        p: CompressorWorkerParams) {
+        private p: CompressorWorkerParams) {
 
         super(
             compressorUnit,
@@ -70,5 +70,9 @@ export class CompressorWorker extends UnitController implements UnitWorker {
         this.stop();
         await this.compressorUnit.deactivate();
         this.lastDeactivated = UnitController.now();
+    }
+
+    public getParams() {
+        return this.p;
     }
 }

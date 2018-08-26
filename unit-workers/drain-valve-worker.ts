@@ -32,4 +32,8 @@ export class DrainValveWorker implements UnitWorker {
     public async onStop(): Promise<void> {
         await this.drainValveUnit.deactivate();
     }
+
+    public getParams() {
+        return {};
+    }
 }

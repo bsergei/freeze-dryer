@@ -43,7 +43,13 @@ export class UnitWorkerService {
 
     public getStatus(): UnitWorkerStatus {
         return {
-            runningIds: this.unitWorkers.map(w => w.getId())
+            runningIds: this.unitWorkers.map(w => w.getId()),
+            params: this.unitWorkers.map(w => {
+                return {
+                    id: w.getId(),
+                    p: w.getParams()
+                };
+            })
         };
     }
 

@@ -30,7 +30,7 @@ export class HeaterWorker extends UnitController implements UnitWorker {
     constructor(
         private heaterUnit: HeaterUnit,
         tempParamFactory: TemperatureParamFactory,
-        p: HeaterWorkerParams) {
+        private p: HeaterWorkerParams) {
 
         super(
             heaterUnit,
@@ -61,5 +61,9 @@ export class HeaterWorker extends UnitController implements UnitWorker {
         this.stop();
         await this.heaterUnit.deactivate();
         this.lastDeactivated = UnitController.now();
+    }
+
+    public getParams() {
+        return this.p;
     }
 }
