@@ -6,4 +6,6 @@ export interface UnitWorker {
     onTick(): Promise<UnitControllerResult>;
     onStop(): Promise<void>;
     getParams(): any;
+    getLastUpdated(): number;
+    getStartedTime(): number;
 }

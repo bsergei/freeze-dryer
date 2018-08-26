@@ -62,4 +62,12 @@ export class VacuumWorker extends UnitController implements UnitWorker {
     public getParams() {
         return this.p;
     }
+
+    public getLastUpdated() {
+        return this.lastUpdated;
+    }
+
+    public getStartedTime() {
+        return this.startedTime;
+    }
 }

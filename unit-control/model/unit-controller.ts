@@ -24,7 +24,8 @@ export class UnitController {
 
     protected isRunning = false;
 
-    private lastUpdated: number;
+    protected startedTime: number;
+    protected lastUpdated: number;
 
     public static now() {
         return new Date().getTime() / 1000.0;
@@ -41,6 +42,7 @@ export class UnitController {
     }
 
     protected start() {
+        this.startedTime = UnitController.now();
         this.isRunning = true;
     }
 

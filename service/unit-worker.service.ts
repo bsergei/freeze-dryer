@@ -8,6 +8,8 @@ export class UnitWorkerService {
     private unitWorkers: UnitWorker[] = [];
 
     constructor(private log: Log) {
+        log.info('UnitWorkerService created');
+        this.run();
     }
 
     public async add(unitWorker: UnitWorker) {
@@ -47,7 +49,9 @@ export class UnitWorkerService {
             params: this.unitWorkers.map(w => {
                 return {
                     id: w.getId(),
-                    p: w.getParams()
+                    p: w.getParams(),
+                    heartbeat: w.getLastUpdated(),
+                    startedTime: w.getStartedTime()
                 };
             })
         };
@@ -59,11 +63,12 @@ export class UnitWorkerService {
         } catch (e) {
             this.log.error(`Error in UnitWorkerService.run: ${e}`);
         }
-        setTimeout(() => this.run(), 1000);
+        setTimeout(() => this.run(), 5000);
     }
 
     private async tick() {
         const currWorkers = this.unitWorkers.slice();
+        this.log.info(`UnitWorkerService.tick: ${currWorkers.length}/${this.unitWorkers.length}`);
         for (const unitWorker of currWorkers) {
             try {
                 await unitWorker.onTick();
