@@ -28,7 +28,7 @@ export class UnitWorkerController {
 
     @httpGet('/stop-all')
     public async stopAll(req: Request, resp: Response) {
-        await this.unitWorkerService.stopAll();
+        await this.unitWorkerService.removeAll();
     }
 
     @httpPost('/start/:id')
@@ -54,7 +54,7 @@ export class UnitWorkerController {
     @httpPost('/stop/:id')
     public async stopWorker(req: Request, resp: Response) {
         const id = req.params.id as string;
-        await this.unitWorkerService.stop(id);
+        await this.unitWorkerService.remove(id);
     }
 
     private async addCompressor(param: CompressorWorkerParams) {

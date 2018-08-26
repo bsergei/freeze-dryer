@@ -1,17 +1,14 @@
 import { injectable } from 'inversify';
 import { ControllableParam } from '../model/controllable-param';
-import { SensorsStatusService } from '../../service/sensors-status.service';
+import { PressureSensorService } from '../../service/pressure-sensor.service';
 
 @injectable()
 export class PressureParam implements ControllableParam {
 
-    constructor(private sensorStatus: SensorsStatusService) {
+    constructor(private pressureService: PressureSensorService) {
     }
 
-    public async readParamValue(): Promise<number> {
-        const sensorStatus = await this.sensorStatus.getFromCache();
-        const value = sensorStatus && sensorStatus
-            .pressure;
-        return value;
+    public readParamValue(): Promise<number> {
+        return this.pressureService.readPressure();
     }
 }

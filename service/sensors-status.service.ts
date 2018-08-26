@@ -75,11 +75,13 @@ export class SensorsStatusService {
         return result;
     }
 
-    public saveInCache(status: SensorsStatus) {
-        return this.storageService.set<SensorsStatus>(storageSensorStatusKey, status);
+    public async saveInCache(status: SensorsStatus) {
+        await this.storageService.isConnected;
+        return await this.storageService.set<SensorsStatus>(storageSensorStatusKey, status);
     }
 
-    public getFromCache() {
-        return this.storageService.get<SensorsStatus>(storageSensorStatusKey);
+    public async getFromCache() {
+        await this.storageService.isConnected;
+        return await this.storageService.get<SensorsStatus>(storageSensorStatusKey);
     }
 }

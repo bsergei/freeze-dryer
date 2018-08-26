@@ -1,6 +1,7 @@
-import * as pigpio from 'pigpio';
+import * as onoff from 'onoff';
 import { injectable } from 'inversify';
 import { GpioStatus } from '../model/gpio-status.model';
+import { Log } from './logger.service';
 
 export type Gpios = 'compressor'
     | 'vacuum'
@@ -13,7 +14,7 @@ export interface GpioDescriptor {
     port: number;
     id: Gpios;
     name: string;
-    pin: pigpio.Gpio;
+    pin: onoff.Gpio;
     zeroValue: boolean;
 }
 
@@ -22,63 +23,72 @@ export class GpioService {
 
     private pins: GpioDescriptor[];
 
-    constructor() {
+    constructor(private log: Log) {
         this.pins = [
             {
                 port: 13,
                 id: 'compressor',
                 name: 'Compressor',
-                pin: new pigpio.Gpio(6, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+                pin: new onoff.Gpio(6, 'out'),
                 zeroValue: true
             },
             {
                 port: 6,
                 id: 'vacuum',
                 name: 'Vacuum ',
-                pin: new pigpio.Gpio(13, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+                pin: new onoff.Gpio(13, 'out'),
                 zeroValue: true
             },
             {
                 port: 5,
                 id: 'fan',
                 name: 'Fan and lights',
-                pin: new pigpio.Gpio(5, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+                pin: new onoff.Gpio(5, 'out'),
                 zeroValue: true
             },
             {
                 port: 0,
                 id: 'drain_valve',
                 name: 'Drain Valve',
-                pin: new pigpio.Gpio(0, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+                pin: new onoff.Gpio(0, 'out'),
                 zeroValue: true
             },
             {
                 port: 19,
                 id: 'heater',
                 name: 'Heater',
-                pin: new pigpio.Gpio(19, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+                pin: new onoff.Gpio(19, 'out'),
                 zeroValue: true
             },
             {
                 port: 26,
                 id: 'thawing',
                 name: 'Thawing',
-                pin: new pigpio.Gpio(26, { mode: pigpio.Gpio.OUTPUT, pullUpDown: pigpio.Gpio.PUD_UP }),
+                pin: new onoff.Gpio(26, 'out'),
                 zeroValue: true
             }
         ];
 
-        // All off.
-        for (const pin of this.pins) {
-            pin.pin.digitalWrite(pin.zeroValue === false ? 0 : 1);
-        }
+        process.on('SIGINT', () => {
+            for (const pin of this.pins) {
+                pin.pin.unexport();
+            }
+            this.log.info('GPIO service stopped');
+        });
 
-        console.log('GPIO service created');
+        this.allOff();
+        this.log.info('GPIO service started');
+    }
+
+    public allOff() {
+        for (const pin of this.pins) {
+            pin.pin.writeSync(pin.zeroValue === false ? 0 : 1);
+        }
     }
 
     public set(port: number, status: boolean) {
         const pinConfig = this.pins.find(_ => _.port === port);
-        pinConfig.pin.digitalWrite(status === pinConfig.zeroValue ? 0 : 1);
+        pinConfig.pin.writeSync(status === pinConfig.zeroValue ? 0 : 1);
     }
 
     public get(port: number) {
@@ -106,6 +116,6 @@ export class GpioService {
     }
 
     private getOnOffState(pinConfig: GpioDescriptor) {
-        return pinConfig.pin.digitalRead() === 0 ? pinConfig.zeroValue : !pinConfig.zeroValue;
+        return pinConfig.pin.readSync() === 0 ? pinConfig.zeroValue : !pinConfig.zeroValue;
     }
 }

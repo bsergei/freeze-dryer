@@ -1,6 +1,7 @@
 import * as influx from 'influx';
 import { injectable } from 'inversify';
 import { SensorsStatusService } from './sensors-status.service';
+import { Log } from './logger.service';
 
 @injectable()
 export class InfluxService {
@@ -8,7 +9,8 @@ export class InfluxService {
     private influxDb: influx.InfluxDB;
 
     constructor(
-        private sensorsStatus: SensorsStatusService) {
+        private sensorsStatus: SensorsStatusService,
+        private log: Log) {
         this.influxDb = new influx.InfluxDB({
             host: 'localhost',
             port: 8086,
@@ -28,7 +30,7 @@ export class InfluxService {
             ]
         });
 
-        console.log('InfluxService created');
+        this.log.info('InfluxService created');
     }
 
     public async writeSensorStatus() {

@@ -1,35 +1,39 @@
 import { injectable } from 'inversify';
 import * as redis from 'redis';
+import { Log } from './logger.service';
 
 @injectable()
 export class StorageService {
 
     private clientInstance: Promise<redis.RedisClient>;
+    private _isConnected: Promise<boolean>;
 
-    constructor() {
+    constructor(private log: Log) {
         this.clientInstance = new Promise<redis.RedisClient>((resolve, reject) => {
             const client = redis.createClient();
-            console.log('Redis client created');
+            this.log.info('Redis client created');
 
             client.on('error', function (err) {
-                console.log('Error ' + err);
+                this.log.error('Redis Error ' + err);
             });
 
             client.on('connect', args => {
-                console.log('Redis client connected');
+                this.log.info('Redis client connected');
                 resolve(client);
             });
         });
 
-        console.log('StorageService created');
-    }
-
-    public get isConnected() {
-        return new Promise<boolean>((resolve, reject) => {
+        this._isConnected = new Promise<boolean>((resolve, reject) => {
             this.clientInstance.then(() => {
                 resolve(true);
             });
         });
+
+        this.log.info('StorageService created');
+    }
+
+    public get isConnected() {
+        return this._isConnected;
     }
 
     public get<T>(key: string) {

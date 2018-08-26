@@ -15,9 +15,11 @@ import { UnitWorkerService } from '../service/unit-worker.service';
 
 import { configureUnitControl } from '../unit-control/config/ioc';
 import { configureUnitWorkers } from '../unit-workers/ioc';
+import { Log } from '../service/logger.service';
 
 const container = new Container();
 
+container.bind<Log>(Log).toSelf().inSingletonScope();
 container.bind<TempSensorService>(TempSensorService).toSelf().inSingletonScope();
 container.bind<StorageService>(StorageService).toSelf().inSingletonScope();
 container.bind<TempSensorOptService>(TempSensorOptService).toSelf().inSingletonScope();

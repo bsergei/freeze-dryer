@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import { StorageService } from './storage.service';
 import { InfluxService } from './influx.service';
-import { UnitWorkerService } from './unit-worker.service';
+import { Log } from './logger.service';
 
 @injectable()
 export class SenderService {
@@ -9,34 +9,24 @@ export class SenderService {
     constructor(
         private influxService: InfluxService,
         private storageService: StorageService,
-        private unitWorkerService: UnitWorkerService) {
+        private log: Log) {
     }
 
     public async init() {
         const r = await this.storageService.isConnected;
         if (r) {
             this.writeSensorStatus();
-            this.doUnitWorker();
-            console.log('Sensors data sender started successfully');
+            this.log.info('Sensors data sender started successfully');
         }
     }
 
     private async writeSensorStatus() {
         try {
             await this.influxService.writeSensorStatus();
-            console.log(`${new Date()}: Sent sensor data`);
+            this.log.info('Sent sensor data');
         } catch (e) {
-            console.log(e);
+            this.log.error(e);
         }
-        setTimeout(() => this.writeSensorStatus(), 5000);
-    }
-
-    private async doUnitWorker() {
-        try {
-            await this.unitWorkerService.tick();
-        } catch (e) {
-            console.log(e);
-        }
-        setTimeout(() => this.doUnitWorker(), 500);
+        setTimeout(() => this.writeSensorStatus(), 1000);
     }
 }

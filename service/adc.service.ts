@@ -3,6 +3,7 @@ import * as I2C_NS from 'raspi-i2c';
 import * as ADS1x15 from 'raspi-kit-ads1x15';
 import * as Queue from 'sync-queue';
 import { injectable } from 'inversify';
+import { Log } from './logger.service';
 
 @injectable()
 export class AdcService {
@@ -10,7 +11,7 @@ export class AdcService {
     private adcPromise: Promise<ADS1x15>;
     private queue;
 
-    constructor() {
+    constructor(private log: Log) {
         this.adcPromise = new Promise<ADS1x15>((resolve, reject) => {
             Raspi.init(() => {
                 const i2c = new I2C_NS.I2C();
@@ -30,7 +31,7 @@ export class AdcService {
 
         this.queue = new Queue();
 
-        console.log('ADC Service created');
+        this.log.info('ADC Service created');
     }
 
     public readAdc(channel: number) {
@@ -50,7 +51,7 @@ export class AdcService {
                 break;
         }
         if (ch === undefined) {
-            console.error('Invalid channel specified.');
+            this.log.error(`adc.service: Invalid channel specified.`);
             return Promise.resolve(undefined as number);
         }
         return new Promise<number>((resolve, error) => {

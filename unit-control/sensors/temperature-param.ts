@@ -5,7 +5,9 @@ import { TempSensorTypeId } from '../../model';
 
 export class TemperatureParam implements ControllableParam {
 
-    constructor(private sensorStatus: SensorsStatusService, private sensorTypeId: TempSensorTypeId) {
+    constructor(
+        private sensorStatus: SensorsStatusService,
+        private sensorTypeId: TempSensorTypeId) {
     }
 
     public async readParamValue(): Promise<number> {
