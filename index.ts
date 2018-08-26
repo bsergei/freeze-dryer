@@ -37,3 +37,4 @@ const startApp = async () => {
 };
 
 startApp();
+process.stdin.resume();
