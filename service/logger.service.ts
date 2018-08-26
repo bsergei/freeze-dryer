@@ -10,7 +10,7 @@ export class Log {
     constructor() {
         const transport = new DailyRotateFile({
             dirname: __dirname + '/../logs',
-            filename: 'fd-%DATE%.log',
+            filename: `fd-%DATE%-${process.pid}.log`,
             datePattern: 'YYYY-MM-DD-HH',
             zippedArchive: true,
             maxSize: '20m',
@@ -21,15 +21,23 @@ export class Log {
             transports: [
                 transport
             ],
-            exitOnError: false
+            exitOnError: false,
         });
     }
 
     public error(message: string) {
-        this.logger.error(`${new Date().toISOString()}: ${message}`);
+        try {
+            this.logger.error(`${new Date().toISOString()}: ${message}`);
+        } catch (e) {
+            console.log('Error in logger: ' + e);
+        }
     }
 
     public info(message: string) {
-        this.logger.info(`${new Date().toISOString()}: ${message}`);
+        try {
+            this.logger.info(`${new Date().toISOString()}: ${message}`);
+        } catch (e) {
+            console.log('Error in logger: ' + e);
+        }
     }
 }
