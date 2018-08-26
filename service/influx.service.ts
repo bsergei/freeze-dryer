@@ -2,11 +2,13 @@ import * as influx from 'influx';
 import { injectable } from 'inversify';
 import { SensorsStatusService } from './sensors-status.service';
 import { Log } from './logger.service';
+import * as os from 'os';
 
 @injectable()
 export class InfluxService {
 
     private influxDb: influx.InfluxDB;
+    private lastCpuInfo: os.CpuInfo[] = [];
 
     constructor(
         private sensorsStatus: SensorsStatusService,
@@ -98,5 +100,55 @@ export class InfluxService {
                 }
             ]);
         }
+
+        const systemPoints: influx.IPoint[] = [];
+        systemPoints.push({
+                measurement: 'system',
+                tags: {
+                    type: 'freemem'
+                },
+                fields: {
+                    value: os.freemem
+                }
+        });
+        const cpuUsages = this.getCpuUsage();
+        for (let i = 0; i < cpuUsages.length; i++) {
+            const cpuUsage = cpuUsages[i];
+            systemPoints.push({
+                measurement: 'system',
+                tags: {
+                    type: 'cpuUsage' + i
+                },
+                fields: {
+                    value: cpuUsage
+                }
+            });
+        }
+        await this.influxDb.writeMeasurement('system', systemPoints);
+    }
+
+    private getCpuUsage() {
+        const cpus = os.cpus();
+        const result: number[] = [];
+
+        if (this.lastCpuInfo.length === cpus.length) {
+            for (let i = 0, len = cpus.length; i < len; i++) {
+                const cpu = cpus[i];
+                let total = this.getTotal(cpu) - this.getTotal(this.lastCpuInfo[i]);
+                let user = cpu.times.user - this.lastCpuInfo[i].times.user;
+                result.push(Math.round(100 * user / total));
+            }
+        }
+
+        this.lastCpuInfo = cpus;
+        return result;
+    }
+
+    private getTotal(cpu: os.CpuInfo) {
+        let total = 0;
+        for (const type of Object.getOwnPropertyNames(cpu.times)) {
+            total += cpu.times[type];
+        }
+        return total;
     }
 }
