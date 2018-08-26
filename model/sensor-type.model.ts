@@ -14,7 +14,8 @@ export type TempSensorTypeId = 'condenser_input'
   | 'heater3'
   | 'heater4'
   | 'heater5'
-  | 'heater'
+  | 'heater6'
+  | 'heater7'
   | 'compressor'
   | 'vacuum_pump';
 
@@ -86,6 +87,14 @@ export const sensorTypes: SensorType[] = [{
   {
     id: 'heater5',
     display: 'Heater 5'
+  },
+  {
+    id: 'heater6',
+    display: 'Heater 6'
+  },
+  {
+    id: 'heater7',
+    display: 'Heater 7'
   },
   {
     id: 'compressor',
