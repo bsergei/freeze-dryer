@@ -4,37 +4,37 @@ import { startWeb } from './service/web.service';
 import { Log } from './service/logger.service';
 
 const log = container.resolve(Log);
+let shouldExit = false;
 
-const startApp = async () => {
-  await startWeb();
-
+function spawnSenderProcess() {
   try {
-    const senderProcess = cp.fork(__dirname + '/child.sender', ['child'], { silent: true });
+    let senderProcess = cp.fork(__dirname + '/child.sender', ['child'], { silent: true });
     senderProcess.on('exit', (code, signal) => {
-      log.info('child.sender exited');
+      log.info('child.sender exited...');
+      if (!shouldExit) {
+        log.info('child.sender respawing...');
+        spawnSenderProcess();
+      }
     });
 
-    process.on('exit', () => {
-      senderProcess.kill();
+    log.info(`child.sender started: pid=${senderProcess.pid}`);
+
+    process.on('SIGINT', () => {
+      shouldExit = true;
+      if (senderProcess) {
+        senderProcess.kill();
+        senderProcess = undefined;
+      }
     });
 
   } catch (e) {
     log.error(`Error while starting child.sender: ${e}`);
   }
+}
 
-  try {
-    const unitWorkerProcess = cp.fork(__dirname + '/child.unit-worker', ['child'], { silent: true });
-    unitWorkerProcess.on('exit', (code, signal) => {
-      log.info('child.unit-worker exited');
-    });
-
-    process.on('exit', () => {
-      unitWorkerProcess.kill();
-    });
-  } catch (e) {
-    log.error(`Error while starting child.unit-worker: ${e}`);
-  }
-};
+async function startApp() {
+  await startWeb();
+  spawnSenderProcess();
+}
 
 startApp();
-process.stdin.resume();
