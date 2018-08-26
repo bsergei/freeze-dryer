@@ -6,3 +6,4 @@ export * from './sensors-status.controller';
 export * from './storage.controller';
 export * from './pressure-sensor.controller';
 export * from './unit-worker.controller';
+export * from './system.controller';
