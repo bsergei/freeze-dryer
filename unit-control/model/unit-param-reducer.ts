@@ -17,9 +17,9 @@ export class UnitParamReducer implements StateSwitchChecker {
         const paramValue = await this.unitControlParam.readParamValue();
         if (paramValue === undefined ||
             paramValue === null) {
-            return undefined;
+            return false;
         }
-        return paramValue >= (this.targetParamValue + (this.histeresis | 0));
+        return paramValue > (this.targetParamValue + (this.histeresis | 0));
     }
 
     public async shouldDeactivate(
@@ -28,8 +28,8 @@ export class UnitParamReducer implements StateSwitchChecker {
         const paramValue = await this.unitControlParam.readParamValue();
         if (paramValue === undefined ||
             paramValue === null) {
-            return undefined;
+            return true;
         }
-        return paramValue <= (this.targetParamValue - (this.histeresis | 0));
+        return paramValue < (this.targetParamValue - (this.histeresis | 0));
     }
 }
