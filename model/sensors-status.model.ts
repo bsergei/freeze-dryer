@@ -13,4 +13,5 @@ export interface SensorsStatus {
     gpios: GpioStatus[];
     adcs: number[];
     pressure: number;
+    pressure2: number;
 }

@@ -25,10 +25,10 @@ export class SensorsStatusService {
     public async getSensorsStatus() {
         const adcsPromise =
             Promise.all([
-                this.adcService.readAdc(0),
-                this.adcService.readAdc(1),
-                this.adcService.readAdc(2),
-                this.adcService.readAdc(3)
+                this.adcService.readAdc('A0'),
+                this.adcService.readAdc('A1'),
+                this.adcService.readAdc('A2'),
+                this.adcService.readAdc('A3')
             ]);
 
         const result: SensorsStatus = {
@@ -36,7 +36,8 @@ export class SensorsStatusService {
             temp_sensors: [],
             gpios: this.gpioService.getAll(),
             adcs: [],
-            pressure: undefined
+            pressure: undefined,
+            pressure2: undefined
         };
 
         const sensorOpts = await this.sensorOptService.getSensorOpts();
@@ -70,7 +71,8 @@ export class SensorsStatusService {
 
         result.adcs = await adcsPromise;
 
-        result.pressure = await this.pressureService.readPressure();
+        result.pressure = await this.pressureService.readPressure('A0');
+        result.pressure2 = await this.pressureService.readPressure('A1');
 
         return result;
     }

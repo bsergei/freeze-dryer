@@ -9,9 +9,17 @@ export class PressureSensorController {
     constructor(private pressureSensorService: PressureSensorService) {
     }
 
-    @httpGet('/')
-    public async get(request: Request, response: Response) {
-        const value = await this.pressureSensorService.readPressure();
+    @httpGet('/a0')
+    public async getA0(request: Request, response: Response) {
+        const value = await this.pressureSensorService.readPressure('A0');
+        return {
+            value: value
+        };
+    }
+
+    @httpGet('/a1')
+    public async getA1(request: Request, response: Response) {
+        const value = await this.pressureSensorService.readPressure('A1');
         return {
             value: value
         };

@@ -9,6 +9,6 @@ export class PressureParam implements ControllableParam {
     }
 
     public readParamValue(): Promise<number> {
-        return this.pressureService.readPressure();
+        return this.pressureService.readPressure('A0');
     }
 }

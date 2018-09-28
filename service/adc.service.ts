@@ -34,19 +34,19 @@ export class AdcService {
         this.log.info('ADC Service created');
     }
 
-    public readAdc(channel: number) {
+    public readAdc(channel: 'A0'|'A1'|'A2'|'A3') {
         let ch;
         switch (channel) {
-            case 0:
+            case 'A0':
                 ch = ADS1x15.channel.CHANNEL_0;
                 break;
-            case 1:
+            case 'A1':
                 ch = ADS1x15.channel.CHANNEL_1;
                 break;
-            case 2:
+            case 'A2':
                 ch = ADS1x15.channel.CHANNEL_2;
                 break;
-            case 3:
+            case 'A3':
                 ch = ADS1x15.channel.CHANNEL_3;
                 break;
         }

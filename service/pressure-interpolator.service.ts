@@ -1,4 +1,5 @@
-import * as calibrationData from '../calibration.json';
+import * as calibrationDataA0 from '../calibration_A0.json';
+import * as calibrationDataA1 from '../calibration_A1.json';
 import { injectable } from 'inversify';
 
 class Point {
@@ -56,19 +57,29 @@ class LinearInterpolator {
 
 @injectable()
 export class PressureInterpolatorService {
-    private interpolator: LinearInterpolator;
+    private interpolator: {
+        A0?: LinearInterpolator,
+        A1?: LinearInterpolator
+    } = {};
 
     constructor() {
-        const pressureData: Array<Array<number>> = (<any>calibrationData).pressure;
+        const pressureDataA0: Array<Array<number>> = (<any>calibrationDataA0).pressure;
+        const pressureDataA1: Array<Array<number>> = (<any>calibrationDataA1).pressure;
+        this.interpolator.A0 = this.createInterpolator(pressureDataA0);
+        this.interpolator.A1 = this.createInterpolator(pressureDataA1);
+    }
+
+    public getPressure(src: ('A0'|'A1'), volts: number) {
+        return this.interpolator[src].interpolate(volts);
+    }
+
+    private createInterpolator(pressureData: Array<Array<number>>) {
         const points: Point[] = [];
         for (const vector of pressureData) {
             points.push(new Point(Number(vector[0]), Number(vector[1])));
         }
 
-        this.interpolator = new LinearInterpolator(points);
-    }
-
-    public getPressure(volts: number) {
-        return this.interpolator.interpolate(volts);
+        const interpolator = new LinearInterpolator(points);
+        return interpolator;
     }
 }

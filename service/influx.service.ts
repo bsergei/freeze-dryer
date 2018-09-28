@@ -94,8 +94,20 @@ export class InfluxService {
             await this.influxDb.writeMeasurement('pressure', [
                 {
                     measurement: 'pressure',
+                    tags: {
+                        type: 'A0'
+                    },
                     fields: {
                         value: result.pressure
+                    }
+                },
+                {
+                    measurement: 'pressure',
+                    tags: {
+                        type: 'A1'
+                    },
+                    fields: {
+                        value: result.pressure2
                     }
                 }
             ]);
