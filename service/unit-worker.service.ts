@@ -27,7 +27,10 @@ export class UnitWorkerService {
         this.unitWorkers.push(unitWorker);
 
         const storageKey = this.getParamsStorageKey();
-        const lastParams = await this.storageService.get<UnitWorkerParams>(storageKey);
+        let lastParams = await this.storageService.get<UnitWorkerParams>(storageKey);
+        if (!lastParams) {
+            lastParams = {};
+        }
         lastParams[unitWorker.kind] = unitWorker.getParams();
         await this.storageService.set(storageKey, lastParams);
     }
