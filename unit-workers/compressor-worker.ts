@@ -27,7 +27,9 @@ export class CompressorWorkerFactory {
     }
 }
 
-export class CompressorWorker extends UnitController implements UnitWorker {
+export class CompressorWorker extends UnitController implements UnitWorker<'compressor'> {
+
+    public kind: 'compressor' = 'compressor';
 
     constructor(
         private compressorUnit: CompressorUnit,
@@ -50,10 +52,6 @@ export class CompressorWorker extends UnitController implements UnitWorker {
                 ),
             new ActivateDebouncerGuard(p.debounceTime)
         );
-    }
-
-    public getId(): string {
-        return this.compressorUnit.getId();
     }
 
     public async onStart() {

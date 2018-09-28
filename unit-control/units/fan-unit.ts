@@ -7,10 +7,6 @@ export class FanUnit implements Unit {
     constructor(private gpioUnit: GpioUnit) {
     }
 
-    public getId(): string {
-        return 'fan';
-    }
-
     public getIsActive(): Promise<boolean> {
         return this.gpioUnit.getIsActive('fan');
     }

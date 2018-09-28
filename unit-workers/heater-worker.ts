@@ -25,7 +25,9 @@ export class HeaterWorkerFactory {
     }
 }
 
-export class HeaterWorker extends UnitController implements UnitWorker {
+export class HeaterWorker extends UnitController implements UnitWorker<'heater'> {
+
+    public kind: 'heater' = 'heater';
 
     constructor(
         private heaterUnit: HeaterUnit,
@@ -41,10 +43,6 @@ export class HeaterWorker extends UnitController implements UnitWorker {
                     p.histeresis))
             )
         );
-    }
-
-    public getId(): string {
-        return this.heaterUnit.getId();
     }
 
     public async onStart() {

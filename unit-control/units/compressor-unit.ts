@@ -7,10 +7,6 @@ export class CompressorUnit implements Unit {
     constructor(private gpioUnit: GpioUnit) {
     }
 
-    public getId(): string {
-        return 'compressor';
-    }
-
     public getIsActive(): Promise<boolean> {
         return this.gpioUnit.getIsActive('compressor');
     }

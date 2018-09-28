@@ -24,7 +24,9 @@ export class VacuumWorkerFactory {
     }
 }
 
-export class VacuumWorker extends UnitController implements UnitWorker {
+export class VacuumWorker extends UnitController implements UnitWorker<'vacuum'> {
+
+    public kind: 'vacuum' = 'vacuum';
 
     constructor(
         private vacuumUnit: VacuumUnit,
@@ -37,10 +39,6 @@ export class VacuumWorker extends UnitController implements UnitWorker {
                 p.targetPressure,
                 p.histeresis)
         );
-    }
-
-    public getId(): string {
-        return this.vacuumUnit.getId();
     }
 
     public async onStart() {

@@ -7,10 +7,6 @@ export class DrainValveUnit implements Unit {
     constructor(private gpioUnit: GpioUnit) {
     }
 
-    public getId(): string {
-        return 'drain_valve';
-    }
-
     public getIsActive(): Promise<boolean> {
         return this.gpioUnit.getIsActive('drain_valve');
     }

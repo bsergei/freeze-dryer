@@ -7,10 +7,6 @@ export class VacuumUnit implements Unit {
     constructor(private gpioUnit: GpioUnit) {
     }
 
-    public getId(): string {
-        return 'vacuum';
-    }
-
     public getIsActive(): Promise<boolean> {
         return this.gpioUnit.getIsActive('vacuum');
     }

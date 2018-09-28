@@ -1,14 +1,18 @@
 import { injectable } from 'inversify';
 import * as redis from 'redis';
 import { Log } from './logger.service';
+import * as Queue from 'sync-queue';
 
 @injectable()
 export class StorageService {
 
     private clientInstance: Promise<redis.RedisClient>;
     private _isConnected: Promise<boolean>;
+    private bgSaveQueue;
 
     constructor(private log: Log) {
+        this.bgSaveQueue = new Queue();
+
         this.clientInstance = new Promise<redis.RedisClient>((resolve, reject) => {
             const client = redis.createClient();
             this.log.info('Redis client created');
@@ -51,8 +55,11 @@ export class StorageService {
             this.clientInstance
                 .then(client =>
                     client.set(key, JSON.stringify(value), (err, reply) => {
-                        client.bgsave(() => {
-                            resolve(true);
+                        this.bgSaveQueue.place(() => {
+                            client.bgsave(() => {
+                                resolve(true);
+                            });
+                            this.bgSaveQueue.next();
                         });
                     }));
         });

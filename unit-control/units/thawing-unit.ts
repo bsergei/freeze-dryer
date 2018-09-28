@@ -7,10 +7,6 @@ export class ThawingUnit implements Unit {
     constructor(private gpioUnit: GpioUnit) {
     }
 
-    public getId(): string {
-        return 'thawing';
-    }
-
     public getIsActive(): Promise<boolean> {
         return this.gpioUnit.getIsActive('thawing');
     }

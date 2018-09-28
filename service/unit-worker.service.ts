@@ -1,23 +1,35 @@
-import { injectable } from '../node_modules/inversify';
+import { injectable } from 'inversify';
 import { UnitWorker } from '../unit-workers/unit-worker';
-import { UnitWorkerStatus } from '../model/unit-worker-status.model';
+import {
+    UnitWorkerStatus,
+    UnitWorkerParams,
+    UnitWorkerId
+} from '../model/unit-worker-status.model';
 import { Log } from './logger.service';
+import { StorageService } from './storage.service';
 
 @injectable()
 export class UnitWorkerService {
     private unitWorkers: UnitWorker[] = [];
 
-    constructor(private log: Log) {
+    constructor(
+        private log: Log,
+        private storageService: StorageService) {
         log.info('UnitWorkerService created');
         this.run();
     }
 
-    public async add(unitWorker: UnitWorker) {
-        if (this.findUnitWorkerIdx(unitWorker.getId()) >= 0) {
+    public async add<T extends UnitWorkerId>(unitWorker: UnitWorker<T>) {
+        if (this.findUnitWorkerIdx(unitWorker.kind) >= 0) {
             return;
         }
         await unitWorker.onStart();
         this.unitWorkers.push(unitWorker);
+
+        const storageKey = this.getParamsStorageKey();
+        const lastParams = await this.storageService.get<UnitWorkerParams>(storageKey);
+        lastParams[unitWorker.kind] = unitWorker.getParams();
+        await this.storageService.set(storageKey, lastParams);
     }
 
     public async removeAll() {
@@ -33,7 +45,7 @@ export class UnitWorkerService {
         }
     }
 
-    public async remove(id: string) {
+    public async remove(id: UnitWorkerId) {
         const idx = this.findUnitWorkerIdx(id);
         if (idx >= 0) {
             const unitWorker = this.unitWorkers[idx];
@@ -44,17 +56,20 @@ export class UnitWorkerService {
     }
 
     public getStatus(): UnitWorkerStatus {
-        return {
-            runningIds: this.unitWorkers.map(w => w.getId()),
-            params: this.unitWorkers.map(w => {
-                return {
-                    id: w.getId(),
-                    p: w.getParams(),
-                    heartbeat: w.getLastUpdated(),
-                    startedTime: w.getStartedTime()
-                };
-            })
+        const res =  {
+            runningIds: this.unitWorkers.map(w => w.kind),
+            params: {}
         };
+
+        for (let unitWorker of this.unitWorkers) {
+            res.params[unitWorker.kind] = {
+                p: unitWorker.getParams(),
+                heartbeat: unitWorker.getLastUpdated(),
+                startedTime: unitWorker.getStartedTime()
+            };
+        }
+
+        return res;
     }
 
     public async run() {
@@ -64,6 +79,10 @@ export class UnitWorkerService {
             this.log.error(`Error in UnitWorkerService.run: ${e}`);
         }
         setTimeout(() => this.run(), 5000);
+    }
+
+    public async getLastStoredParams() {
+        return await this.storageService.get<UnitWorkerParams>(this.getParamsStorageKey());
     }
 
     private async tick() {
@@ -78,8 +97,12 @@ export class UnitWorkerService {
         }
     }
 
-    private findUnitWorkerIdx(id: string) {
-        const idx = this.unitWorkers.findIndex(v => v.getId() === id);
+    private findUnitWorkerIdx(id: UnitWorkerId) {
+        const idx = this.unitWorkers.findIndex(v => v.kind === id);
         return idx;
+    }
+
+    private getParamsStorageKey() {
+        return `unit-worker:params`;
     }
 }

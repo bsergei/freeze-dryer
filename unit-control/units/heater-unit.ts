@@ -7,10 +7,6 @@ export class HeaterUnit implements Unit {
     constructor(private gpioUnit: GpioUnit) {
     }
 
-    public getId(): string {
-        return 'heater';
-    }
-
     public getIsActive(): Promise<boolean> {
         return this.gpioUnit.getIsActive('heater');
     }
