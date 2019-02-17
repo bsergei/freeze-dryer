@@ -27,12 +27,19 @@ export class UnitWorkerService {
         this.unitWorkers.push(unitWorker);
 
         const storageKey = this.getParamsStorageKey();
-        let lastParams = await this.storageService.get<UnitWorkerParams>(storageKey);
-        if (!lastParams) {
-            lastParams = {};
-        }
-        lastParams[unitWorker.kind] = unitWorker.getParams();
-        await this.storageService.set(storageKey, lastParams);
+        const unitParams = unitWorker.getParams();
+
+        const lastParams = await this.storageService.updateWithLock<UnitWorkerParams>(
+            storageKey, v => {
+                if (!v) {
+                    v = {};
+                }
+                v[unitWorker.kind] = unitParams;
+                return v;
+            });
+
+        await this.storageService.publish('unit-worker-params', lastParams);
+        await this.storageService.publish('unit-worker-status', this.getStatus());
     }
 
     public async removeAll() {
@@ -78,6 +85,7 @@ export class UnitWorkerService {
     public async run() {
         try {
             await this.tick();
+            await this.storageService.publish('unit-worker-status', this.getStatus());
         } catch (e) {
             this.log.error(`Error in UnitWorkerService.run: ${e}`);
         }
@@ -90,7 +98,6 @@ export class UnitWorkerService {
 
     private async tick() {
         const currWorkers = this.unitWorkers.slice();
-        this.log.info(`UnitWorkerService.tick: ${currWorkers.length}/${this.unitWorkers.length}`);
         for (const unitWorker of currWorkers) {
             try {
                 await unitWorker.onTick();

@@ -9,7 +9,6 @@ import { AdcService } from './adc.service';
 import { PressureSensorService } from './pressure-sensor.service';
 import { Log } from './logger.service';
 import { NotifyService } from './notify.service';
-import { RealtimeService } from './realtime.service';
 
 const storageSensorStatusKey = 'storage:sensor-status';
 
@@ -23,7 +22,6 @@ export class SensorsStatusService {
         private adcService: AdcService,
         private pressureService: PressureSensorService,
         private storageService: StorageService,
-        private realtimeService: RealtimeService,
         private log: Log,
         private notifyService: NotifyService) {
     }
@@ -80,14 +78,20 @@ export class SensorsStatusService {
         try {
             const pressures = Promise.all([
                 this.pressureService.readPressure('A0'),
-                this.pressureService.readPressure('A1')
+                this.pressureService.readPressure('A1'),
+                this.pressureService.readPressure('A2'),
+                this.pressureService.readPressure('A3')
             ]);
             const p = await pressures;
             result.pressure = p[0];
             result.pressure2 = p[1];
+            result.pressure3 = p[2];
+            result.pressure4 = p[3];
         } catch (err) {
             result.pressure = undefined;
             result.pressure2 = undefined;
+            result.pressure3 = undefined;
+            result.pressure4 = undefined;
             const errorStr = 'Sensor Status: Pressure read error: ' + err;
             errors.push(errorStr);
         }
@@ -127,7 +131,7 @@ export class SensorsStatusService {
                 result.asOfDate = new Date();
 
                 // Publish updated result.
-                this.realtimeService.publish('sensors-status', result);
+                this.storageService.publish('sensors-status', result);
 
                 return result;
             },
@@ -151,6 +155,8 @@ export class SensorsStatusService {
             adcs_asOfDate: new Date(),
             pressure: undefined,
             pressure2: undefined,
+            pressure3: undefined,
+            pressure4: undefined,
             pressure_asOfDate: new Date
         };
 

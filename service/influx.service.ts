@@ -34,75 +34,83 @@ export class InfluxService {
         this.log.info('InfluxService created');
     }
 
-    public async writeSensorStatus(result: SensorsStatus, asOfDate: Date) {
+    public async writeSensorStatus(result: SensorsStatus) {
 
         const points: influx.IPoint[] = [];
-        if (result.temp_sensors_asOfDate >= asOfDate) {
-            for (const t of result.temp_sensors) {
-                points.push({
-                    measurement: 'temperature',
-                    tags: {
-                        type: t.sensor_type.id
-                    },
-                    fields: {
-                        value: t.temperature
-                    }
-                });
-            }
+        for (const t of result.temp_sensors) {
+            points.push({
+                measurement: 'temperature',
+                tags: {
+                    type: t.sensor_type.id
+                },
+                fields: {
+                    value: t.temperature
+                }
+            });
         }
 
-        if (result.gpios_asOfDate >= asOfDate) {
-            for (const gpio of result.gpios) {
-                points.push({
-                    measurement: 'relay',
-                    tags: {
-                        type: gpio.id
-                    },
-                    fields: {
-                        value: gpio.value
-                    }
-                });
-            }
+        for (const gpio of result.gpios) {
+            points.push({
+                measurement: 'relay',
+                tags: {
+                    type: gpio.id
+                },
+                fields: {
+                    value: gpio.value
+                }
+            });
         }
 
-        if (result.adcs_asOfDate >= asOfDate) {
-            for (let adcChannel = 0; adcChannel < result.adcs.length; adcChannel++) {
-                points.push({
-                    measurement: 'adc_volts',
-                    tags: {
-                        type: 'adc' + adcChannel
-                    },
-                    fields: {
-                        value: result.adcs[adcChannel]
-                    }
-                });
-            }
+        for (let adcChannel = 0; adcChannel < result.adcs.length; adcChannel++) {
+            points.push({
+                measurement: 'adc_volts',
+                tags: {
+                    type: 'adc' + adcChannel
+                },
+                fields: {
+                    value: result.adcs[adcChannel]
+                }
+            });
         }
 
-        if (result.pressure_asOfDate >= asOfDate) {
-            if (result.pressure !== undefined) {
-                points.push(...[
-                    {
-                        measurement: 'pressure',
-                        tags: {
-                            type: 'A0'
-                        },
-                        fields: {
-                            value: result.pressure
-                        }
-                    },
-                    {
-                        measurement: 'pressure',
-                        tags: {
-                            type: 'A1'
-                        },
-                        fields: {
-                            value: result.pressure2
-                        }
-                    }
-                ]);
+        points.push(...[
+            {
+                measurement: 'pressure',
+                tags: {
+                    type: 'A0'
+                },
+                fields: {
+                    value: result.pressure
+                }
+            },
+            {
+                measurement: 'pressure',
+                tags: {
+                    type: 'A1'
+                },
+                fields: {
+                    value: result.pressure2
+                }
+            },
+            {
+                measurement: 'pressure',
+                tags: {
+                    type: 'A2'
+                },
+                fields: {
+                    value: result.pressure3
+                }
+            },
+            {
+                measurement: 'pressure',
+                tags: {
+                    type: 'A3'
+                },
+                fields: {
+                    value: result.pressure4
+                }
             }
-        }
+        ]);
 
         points.push({
             measurement: 'system',

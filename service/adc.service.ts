@@ -54,11 +54,16 @@ export class AdcService {
             this.log.error(`adc.service: Invalid channel specified.`);
             return Promise.resolve(undefined as number);
         }
-        return new Promise<number>((resolve, error) => {
+        return new Promise<number>((resolve, reject) => {
             this.adcPromise.then(adc => {
                 this.queue.place(() => {
                     adc.readChannel(ch, (err, value, volts) => {
-                        resolve(volts);
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(volts);
+                        }
+
                         this.queue.next();
                     });
                 });

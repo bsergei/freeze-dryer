@@ -1,6 +1,7 @@
 import { injectable } from 'inversify';
 import * as redis from 'redis';
 import { Log } from './logger.service';
+import { RealtimeChannel } from './realtime';
 
 @injectable()
 export class RealtimeService {
@@ -9,8 +10,6 @@ export class RealtimeService {
     private _isConnected: Promise<boolean>;
 
     private handlers: { [name: string]: ((message: any) => void)[] } = {};
-
-    private knownChannels = ['sensors-status'];
 
     constructor(private log: Log) {
 
@@ -32,10 +31,12 @@ export class RealtimeService {
                 if (handlers && handlers.length > 0) {
                     for (const h of handlers) {
                         try {
-                            let res;
+                            let res = undefined;
                             let success = false;
                             try {
-                                res = JSON.parse(msg);
+                                if (msg !== undefined) {
+                                    res = JSON.parse(msg);
+                                }
                                 success = true;
                             } catch (e) {
                                 this.log.error(`Error in RealtimeRedis (pub/sub: ch: ${ch}, msg: ${msg}): ${e}`);
@@ -60,15 +61,11 @@ export class RealtimeService {
         this.log.info('RealtimeService created');
     }
 
-    public getKnownChannels() {
-        return this.knownChannels.slice();
-    }
-
     public get isConnected() {
         return this._isConnected;
     }
 
-    public async subscribe(channel: string, handler: (message: any) => void) {
+    public async subscribe(channel: RealtimeChannel, handler: (message: any) => void) {
         await this.isConnected;
 
         let handlers = this.handlers[channel];
@@ -94,26 +91,6 @@ export class RealtimeService {
         }
 
         return () => this.unsubscribe(channel, handler);
-    }
-
-    public async publish(channel: string, message: any) {
-        const ch = this.knownChannels.find(p => p === channel);
-        if (!ch) {
-            this.log.info(`Unknown channel published: ${channel}`);
-            return;
-        }
-
-        const client = await this.clientInstance;
-        return new Promise<void>((resolve, reject) => {
-            client.publish(channel, JSON.stringify(message), (err, reply) => {
-                if (err) {
-                    this.log.error('RealtimeRedis error: ' + err);
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
-        })
     }
 
     private async unsubscribe(channel: string, handler: (message: any) => void) {

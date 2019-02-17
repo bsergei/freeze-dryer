@@ -17,19 +17,18 @@ export class SenderService {
     public async init() {
         const r = await this.storageService.isConnected;
         if (r) {
-            this.writeSensorStatus(new Date());
+            this.writeSensorStatus();
             this.log.info('Sensors data sender started successfully');
         }
     }
 
-    private async writeSensorStatus(lastWritten: Date) {
+    private async writeSensorStatus() {
         try {
             const status = await this.sensorsStatus.getFromCache();
-            await this.influxService.writeSensorStatus(status, lastWritten);
+            await this.influxService.writeSensorStatus(status);
         } catch (e) {
             this.log.error(`Error in SenderService.writeSensorStatus: ${e}`);
         }
-        var newLastWritten = new Date();
-        setTimeout(() => this.writeSensorStatus(newLastWritten), 5000);
+        setTimeout(() => this.writeSensorStatus(), 5000);
     }
 }

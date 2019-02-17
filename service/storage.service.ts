@@ -3,6 +3,7 @@ import * as redis from 'redis';
 import * as Redlock from 'redlock';
 import { Log } from './logger.service';
 import * as Queue from 'sync-queue';
+import { RealtimeChannel } from './realtime';
 
 @injectable()
 export class StorageService {
@@ -72,6 +73,7 @@ export class StorageService {
             const value = await this.get<T>(key);
             const valueResult = updateFunc(value);
             await this.set(key, valueResult, isPersistent);
+            return valueResult;
         }
         finally {
             await lock.unlock();
@@ -145,5 +147,19 @@ export class StorageService {
                     resolve();
                 }));
         });
+    }
+
+    public async publish(channel: RealtimeChannel, message: any) {
+        const client = await this.clientInstance;
+        return new Promise<void>((resolve, reject) => {
+            client.publish(channel, JSON.stringify(message), (err, reply) => {
+                if (err) {
+                    this.log.error('RealtimeRedis error: ' + err);
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        })
     }
 }

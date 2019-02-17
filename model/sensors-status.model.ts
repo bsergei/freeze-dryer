@@ -21,5 +21,7 @@ export interface SensorsStatus {
 
     pressure: number;
     pressure2: number;
+    pressure3: number;
+    pressure4: number;
     pressure_asOfDate: Date;
 }

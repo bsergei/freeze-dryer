@@ -1,5 +1,7 @@
 import * as calibrationDataA0 from '../calibration_A0.json';
 import * as calibrationDataA1 from '../calibration_A1.json';
+import * as calibrationDataA2 from '../calibration_A1.json';
+import * as calibrationDataA3 from '../calibration_A1.json';
 import { injectable } from 'inversify';
 
 class Point {
@@ -59,17 +61,23 @@ class LinearInterpolator {
 export class PressureInterpolatorService {
     private interpolator: {
         A0?: LinearInterpolator,
-        A1?: LinearInterpolator
+        A1?: LinearInterpolator,
+        A2?: LinearInterpolator,
+        A3?: LinearInterpolator
     } = {};
 
     constructor() {
         const pressureDataA0: Array<Array<number>> = (<any>calibrationDataA0).pressure;
         const pressureDataA1: Array<Array<number>> = (<any>calibrationDataA1).pressure;
+        const pressureDataA2: Array<Array<number>> = (<any>calibrationDataA2).pressure;
+        const pressureDataA3: Array<Array<number>> = (<any>calibrationDataA3).pressure;
         this.interpolator.A0 = this.createInterpolator(pressureDataA0);
         this.interpolator.A1 = this.createInterpolator(pressureDataA1);
+        this.interpolator.A2 = this.createInterpolator(pressureDataA2);
+        this.interpolator.A3 = this.createInterpolator(pressureDataA3);
     }
 
-    public getPressure(src: ('A0'|'A1'), volts: number) {
+    public getPressure(src: ('A0'|'A1'|'A2'|'A3'), volts: number) {
         return this.interpolator[src].interpolate(volts);
     }
 

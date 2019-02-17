@@ -9,6 +9,7 @@ import '../controller';
 import * as io from 'socket.io';
 import { injectable, Container } from 'inversify';
 import { RealtimeService } from './realtime.service';
+import { RealtimeChannels } from './realtime';
 
 @injectable()
 export class WebService {
@@ -45,7 +46,7 @@ export class WebService {
                 this.log.info(`Socket.IO client connected`);
                 let unsubscribers: (() => Promise<void>)[] = [];
                 try {
-                    for (const ch of this.realtimeService.getKnownChannels()) {
+                    for (const ch of RealtimeChannels) {
                         const unsubscriber = await this.realtimeService.subscribe(ch, (msg) => {
                             socket.emit(ch, msg);
                         });

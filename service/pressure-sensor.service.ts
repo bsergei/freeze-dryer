@@ -10,7 +10,7 @@ export class PressureSensorService {
         private pressureService: PressureInterpolatorService) {
     }
 
-    public async readPressure(src: 'A0' | 'A1') {
+    public async readPressure(src: 'A0' | 'A1' | 'A2' | 'A3') {
         const volts = await this.adcService.readAdc(src);
         return this.pressureService.getPressure(src, volts);
     }
