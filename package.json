@@ -27,6 +27,7 @@
     "redlock": "^3.1.2",
     "reflect-metadata": "0.1.12",
     "serve-static": "^1.13.2",
+    "socket.io": "^2.2.0",
     "sync-queue": "0.0.2",
     "winston": "^3.0.0",
     "winston-daily-rotate-file": "^3.3.2"
@@ -44,6 +45,7 @@
     "@types/redis": "^2.8.6",
     "@types/redlock": "^3.0.2",
     "@types/serve-static": "^1.13.2",
+    "@types/socket.io": "^2.1.2",
     "ts-lint": "^4.5.1",
     "ts-node": "^8.0.2",
     "typescript": "^3.3.3"

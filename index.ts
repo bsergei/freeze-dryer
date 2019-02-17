@@ -1,7 +1,7 @@
 import { container } from './config/ioc';
 import * as cp from 'child_process';
-import { startWeb } from './service/web.service';
 import { Log } from './service/logger.service';
+import { WebService } from './service/web.service';
 
 const log = container.resolve(Log);
 let shouldExit = false;
@@ -33,7 +33,19 @@ function spawnSenderProcess(id: string) {
 }
 
 async function startApp() {
-  await startWeb();
+
+  process
+    .on('unhandledRejection', (reason, p) => {
+      log.error(`process: unhandledRejection: ${reason}`);
+      console.log(`process: unhandledRejection: ${reason}`);
+    })
+    .on('uncaughtException', err => {
+      log.error(`process: uncaughtException: ${err}, at: ${err.stack}`);
+      console.log(`process: uncaughtException: ${err}, at: ${err.stack}`);
+    });
+
+  const ws = container.resolve(WebService);
+  await ws.init(container);
   spawnSenderProcess('child.sender');
   spawnSenderProcess('child.sensors');
 }

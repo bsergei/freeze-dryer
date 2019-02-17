@@ -1,5 +1,3 @@
-import { container } from '../config/ioc';
-
 import { InversifyExpressServer } from 'inversify-express-utils';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
@@ -8,31 +6,67 @@ import { Log } from './logger.service';
 
 import '../controller';
 
+import * as io from 'socket.io';
+import { injectable, Container } from 'inversify';
+import { RealtimeService } from './realtime.service';
 
-const log = container.resolve(Log);
+@injectable()
+export class WebService {
 
-const startWeb = () => {
-    return new Promise<void>((resolve) => {
+    private serverInstance: Promise<any>;
 
-        // start the server
-        const server = new InversifyExpressServer(container);
+    constructor(
+        private log: Log,
+        private realtimeService: RealtimeService) {
+    }
 
-        server.setConfig((app) => {
-            app.use(serveStatic(__dirname + '/../public'));
-            app.use(cors());
-            app.use(bodyParser.urlencoded({
-                extended: true
-            }));
-            app.use(bodyParser.json());
+    public init(container: Container) {
+        this.serverInstance = new Promise<any>((resolve) => {
+            // start the server
+            const server = new InversifyExpressServer(container);
+
+            server.setConfig((app) => {
+                app.use(serveStatic(__dirname + '/../public'));
+                app.use(cors());
+                app.use(bodyParser.urlencoded({
+                    extended: true
+                }));
+                app.use(bodyParser.json());
+            });
+
+            const port = 80;
+            const serverInstance = server.build();
+            const httpServer = serverInstance.listen(port, () => {
+                this.log.info(`Server started on port ${port}`);
+            });
+
+            const ioServer = io(httpServer);
+            ioServer.on('connect', async socket => {
+                this.log.info(`Socket.IO client connected`);
+                let unsubscribers: (() => Promise<void>)[] = [];
+                try {
+                    for (const ch of this.realtimeService.getKnownChannels()) {
+                        const unsubscriber = await this.realtimeService.subscribe(ch, (msg) => {
+                            socket.emit(ch, msg);
+                        });
+                        unsubscribers.push(unsubscriber);
+                    }
+                } finally {
+                    socket.on('disconnect', async () => {
+                        for (const unsubscriber of unsubscribers) {
+                            if (unsubscriber) {
+                                await unsubscriber();
+                            }
+                        }
+
+                        this.log.info(`Socket.IO client disconnected`);
+                    });
+                }
+            });
+
+            resolve(httpServer);
         });
 
-        const port = 80;
-        const serverInstance = server.build();
-        serverInstance.listen(port, cb => {
-            log.info(`Server started on port ${port}`);
-            resolve();
-        });
-    });
-};
-
-export { startWeb };
+        return this.serverInstance;
+    }
+}

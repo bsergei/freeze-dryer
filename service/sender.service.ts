@@ -26,7 +26,6 @@ export class SenderService {
         try {
             const status = await this.sensorsStatus.getFromCache();
             await this.influxService.writeSensorStatus(status, lastWritten);
-            this.log.info('Sent sensor data');
         } catch (e) {
             this.log.error(`Error in SenderService.writeSensorStatus: ${e}`);
         }

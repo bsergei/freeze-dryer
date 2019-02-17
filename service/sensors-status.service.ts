@@ -9,6 +9,7 @@ import { AdcService } from './adc.service';
 import { PressureSensorService } from './pressure-sensor.service';
 import { Log } from './logger.service';
 import { NotifyService } from './notify.service';
+import { RealtimeService } from './realtime.service';
 
 const storageSensorStatusKey = 'storage:sensor-status';
 
@@ -22,6 +23,7 @@ export class SensorsStatusService {
         private adcService: AdcService,
         private pressureService: PressureSensorService,
         private storageService: StorageService,
+        private realtimeService: RealtimeService,
         private log: Log,
         private notifyService: NotifyService) {
     }
@@ -123,6 +125,10 @@ export class SensorsStatusService {
                 }
                 this.assignPartialResults(result, partialResults);
                 result.asOfDate = new Date();
+
+                // Publish updated result.
+                this.realtimeService.publish('sensors-status', result);
+
                 return result;
             },
             false);

@@ -83,8 +83,23 @@ export class StorageService {
             this.clientInstance
                 .then(client =>
                     client.get(key, (err, reply) => {
-                        resolve(<T>JSON.parse(reply));
-                    }));
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        let res: T;
+                        try {
+                            if (reply !== undefined) {
+                                res = <T>JSON.parse(reply);
+                            }
+                        } catch (e) {
+                            reject(e);
+                            return;
+                        }
+                        resolve(res);
+                    }), err => {
+                        reject(err);
+                    });
         });
     }
 

@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { NotifyService } from './service/notify.service';
 import { Log } from './service/logger.service';
 
