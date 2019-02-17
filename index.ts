@@ -6,18 +6,18 @@ import { Log } from './service/logger.service';
 const log = container.resolve(Log);
 let shouldExit = false;
 
-function spawnSenderProcess() {
+function spawnSenderProcess(id: string) {
   try {
-    let senderProcess = cp.fork(__dirname + '/child.sender', ['child'], { silent: true });
+    let senderProcess = cp.fork(__dirname + `/${id}`, ['child'], { silent: true });
     senderProcess.on('exit', (code, signal) => {
-      log.info('child.sender exited...');
+      log.info(`${id} exited...`);
       if (!shouldExit) {
-        log.info('child.sender respawing...');
-        spawnSenderProcess();
+        log.info(`${id} respawing...`);
+        spawnSenderProcess(id);
       }
     });
 
-    log.info(`child.sender started: pid=${senderProcess.pid}`);
+    log.info(`${id} started: pid=${senderProcess.pid}`);
 
     process.on('SIGINT', () => {
       shouldExit = true;
@@ -28,13 +28,14 @@ function spawnSenderProcess() {
     });
 
   } catch (e) {
-    log.error(`Error while starting child.sender: ${e}`);
+    log.error(`Error while starting ${id}: ${e}`);
   }
 }
 
 async function startApp() {
   await startWeb();
-  spawnSenderProcess();
+  spawnSenderProcess('child.sender');
+  spawnSenderProcess('child.sensors');
 }
 
 startApp();

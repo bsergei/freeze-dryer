@@ -44,6 +44,6 @@ export class TempSensorOptService {
         if (opt.sensor_id && opt.sensor_type) {
             result.push(opt);
         }
-        await this.storageService.set<SensorOpt[]>(storageSensorOptsKey, result);
+        await this.storageService.set(storageSensorOptsKey, result);
     }
 }

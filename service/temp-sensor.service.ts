@@ -77,12 +77,17 @@ export class TempSensorService {
                 try {
                     result = this.parseData(data, options);
                 } catch (e) {
-                    reject(new Error('Cannot read temperature for sensor ' + sensor));
+                    reject(new Error('Cannot read temperature for sensor ' + sensor + ': ' + e));
                     return;
                 }
 
                 if (result === undefined || result === null) {
                     reject(new Error('Cannot read temperature for sensor ' + sensor));
+                    return;
+                }
+
+                if (result === 85.0) {
+                    reject(new Error('Temperature sensor communication error: ' + sensor));
                     return;
                 }
 

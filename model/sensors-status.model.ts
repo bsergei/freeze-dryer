@@ -9,9 +9,17 @@ export interface SensorTempConnected {
 
 export interface SensorsStatus {
     asOfDate: Date;
+
     temp_sensors: SensorTempConnected[];
+    temp_sensors_asOfDate: Date;
+
     gpios: GpioStatus[];
+    gpios_asOfDate: Date;
+
     adcs: number[];
+    adcs_asOfDate: Date;
+
     pressure: number;
     pressure2: number;
+    pressure_asOfDate: Date;
 }

@@ -16,6 +16,8 @@ import { UnitWorkerService } from '../service/unit-worker.service';
 import { configureUnitControl } from '../unit-control/config/ioc';
 import { configureUnitWorkers } from '../unit-workers/ioc';
 import { Log } from '../service/logger.service';
+import { NotifyService } from '../service/notify.service';
+import { SensorsWriterService } from '../service/sensors-writer.service';
 
 const container = new Container();
 
@@ -31,6 +33,8 @@ container.bind<SenderService>(SenderService).toSelf().inSingletonScope();
 container.bind<PressureSensorService>(PressureSensorService).toSelf().inSingletonScope();
 container.bind<PressureInterpolatorService>(PressureInterpolatorService).toSelf().inSingletonScope();
 container.bind<UnitWorkerService>(UnitWorkerService).toSelf().inSingletonScope();
+container.bind<NotifyService>(NotifyService).toSelf().inSingletonScope();
+container.bind<SensorsWriterService>(SensorsWriterService).toSelf().inSingletonScope();
 
 configureUnitControl(container);
 configureUnitWorkers(container);

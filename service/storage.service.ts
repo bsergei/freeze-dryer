@@ -1,5 +1,6 @@
 import { injectable } from 'inversify';
 import * as redis from 'redis';
+import * as Redlock from 'redlock';
 import { Log } from './logger.service';
 import * as Queue from 'sync-queue';
 
@@ -7,6 +8,7 @@ import * as Queue from 'sync-queue';
 export class StorageService {
 
     private clientInstance: Promise<redis.RedisClient>;
+    private redlockInstance: Promise<Redlock>;
     private _isConnected: Promise<boolean>;
     private bgSaveQueue;
 
@@ -27,6 +29,29 @@ export class StorageService {
             });
         });
 
+        this.redlockInstance = new Promise<Redlock>((resolve, reject) => {
+            this.clientInstance.then(client => {
+                const redlock = new Redlock([client], {
+                    // the expected clock drift; for more details
+                    // see http://redis.io/topics/distlock
+                    driftFactor: 0.01, // time in ms
+
+                    // the max number of times Redlock will attempt
+                    // to lock a resource before erroring
+                    retryCount: 10,
+
+                    // the time in ms between attempts
+                    retryDelay: 100, // time in ms
+
+                    // the max time in ms randomly added to retries
+                    // to improve performance under high contention
+                    // see https://www.awsarchitectureblog.com/2015/03/backoff.html
+                    retryJitter: 100 // time in ms
+                });
+                resolve(redlock);
+            });
+        });
+
         this._isConnected = new Promise<boolean>((resolve, reject) => {
             this.clientInstance.then(() => {
                 resolve(true);
@@ -40,6 +65,19 @@ export class StorageService {
         return this._isConnected;
     }
 
+    public async updateWithLock<T>(key: string, updateFunc: (v: T) => T, isPersistent: boolean = true) {
+        const redlock = await this.redlockInstance;
+        const lock = await redlock.lock(key + '_lock', 1000);
+        try {
+            const value = await this.get<T>(key);
+            const valueResult = updateFunc(value);
+            await this.set(key, valueResult, isPersistent);
+        }
+        finally {
+            await lock.unlock();
+        }
+    }
+
     public get<T>(key: string) {
         return new Promise<T>((resolve, reject) => {
             this.clientInstance
@@ -50,18 +88,38 @@ export class StorageService {
         });
     }
 
-    public set<T>(key: string, value: T) {
+    public set(key: string, value: any, isPersistent: boolean = true) {
         return new Promise<boolean>((resolve, reject) => {
             this.clientInstance
-                .then(client =>
-                    client.set(key, JSON.stringify(value), (err, reply) => {
-                        this.bgSaveQueue.place(() => {
-                            client.bgsave(() => {
+                .then(client => {
+                    try {
+                        client.set(key, JSON.stringify(value), (err, reply) => {
+                            if (err) {
+                                this.log.error('Redis error: ' + err);
+                                reject(err);
+                                return;
+                            }
+                            if (isPersistent) {
+                                this.bgSaveQueue.place(() => {
+                                    try {
+                                        client.bgsave(() => {
+                                            resolve(true);
+                                        });
+                                        this.bgSaveQueue.next();
+                                    } catch (bgSaveError) {
+                                        this.log.error('Redis error in BGSAVE: ' + bgSaveError);
+                                        reject(bgSaveError);
+                                    }
+                                });
+                            } else {
                                 resolve(true);
-                            });
-                            this.bgSaveQueue.next();
+                            }
                         });
-                    }));
+                    } catch (setError) {
+                        this.log.error('Redis error in SET: ' + setError);
+                        reject(setError);
+                    }
+                });
         });
     }
 

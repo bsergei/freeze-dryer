@@ -89,7 +89,7 @@ export class GpioService {
     public set(port: number, status: boolean) {
         const pinConfig = this.pins.find(_ => _.port === port);
         pinConfig.pin.writeSync(status === pinConfig.zeroValue ? 0 : 1);
-        this.log.info(`GPIO: Set BCM${port} to ${status}`);
+        this.log.info(`GPIO: Set BCM${port} (${pinConfig.id}) to ${status}, result=${this.getOnOffState(pinConfig)}`);
     }
 
     public get(port: number) {
