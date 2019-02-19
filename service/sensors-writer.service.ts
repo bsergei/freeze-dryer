@@ -34,7 +34,7 @@ export class SensorsWriterService {
         try {
             await this.sensorsStatusService.updateTemperatureSensors();
         } catch (err) {
-            this.log.error(`Error in updateTemperatureSensors: ${err}`);
+            this.log.error(`Error in updateTemperatureSensors: ${err}`, err);
         }
         setTimeout(() => this.updateTemperatureSensors, 500);
     }
@@ -43,7 +43,7 @@ export class SensorsWriterService {
         try {
             await this.sensorsStatusService.updateGpioSensors();
         } catch (err) {
-            this.log.error(`Error in updateGpioSensors: ${err}`);
+            this.log.error(`Error in updateGpioSensors: ${err}`, err);
         }
         setTimeout(() => this.updateGpioSensors, 100);
     }
@@ -52,7 +52,7 @@ export class SensorsWriterService {
         try {
             await this.sensorsStatusService.updatePressureSensors();
         } catch (err) {
-            this.log.error(`Error in updatePressureSensors: ${err}`);
+            this.log.error(`Error in updatePressureSensors: ${err}`, err);
         }
         setTimeout(() => this.updatePressureSensors, 300);
     }

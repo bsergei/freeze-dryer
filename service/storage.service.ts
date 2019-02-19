@@ -112,7 +112,7 @@ export class StorageService {
                     try {
                         client.set(key, JSON.stringify(value), (err, reply) => {
                             if (err) {
-                                this.log.error('Redis error: ' + err);
+                                this.log.error('Redis error: ' + err, err);
                                 reject(err);
                                 return;
                             }
@@ -124,7 +124,7 @@ export class StorageService {
                                         });
                                         this.bgSaveQueue.next();
                                     } catch (bgSaveError) {
-                                        this.log.error('Redis error in BGSAVE: ' + bgSaveError);
+                                        this.log.error('Redis error in BGSAVE: ' + bgSaveError, bgSaveError);
                                         reject(bgSaveError);
                                     }
                                 });
@@ -133,7 +133,7 @@ export class StorageService {
                             }
                         });
                     } catch (setError) {
-                        this.log.error('Redis error in SET: ' + setError);
+                        this.log.error('Redis error in SET: ' + setError, setError);
                         reject(setError);
                     }
                 });
@@ -154,7 +154,7 @@ export class StorageService {
         return new Promise<void>((resolve, reject) => {
             client.publish(channel, JSON.stringify(message), (err, reply) => {
                 if (err) {
-                    this.log.error('RealtimeRedis error: ' + err);
+                    this.log.error('RealtimeRedis error: ' + err, err);
                     reject(err);
                     return;
                 }

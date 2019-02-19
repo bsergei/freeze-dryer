@@ -2,12 +2,11 @@ import * as nodemailer from 'nodemailer';
 import * as smtpTransport from 'nodemailer-smtp-transport';
 import * as emailSettings from '../email.json';
 import { injectable } from 'inversify';
-import { Log } from './logger.service';
 
 @injectable()
 export class NotifyService {
 
-  constructor(private log: Log) {
+  constructor() {
   }
 
   public error(errors: string[]) {
@@ -27,10 +26,9 @@ export class NotifyService {
 
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          this.log.error('Error sending email: ' + error);
+          console.log('Error sending email: ' + error, error);
           reject(error);
         } else {
-          this.log.info('Email sent successfully: ' + info.response);
           resolve(info.response);
         }
       });

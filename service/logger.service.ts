@@ -1,13 +1,14 @@
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { injectable } from 'inversify';
+import { NotifyService } from './notify.service';
 
 @injectable()
 export class Log {
 
     private logger: winston.Logger;
 
-    constructor() {
+    constructor(private notifyService: NotifyService) {
         const transport = new DailyRotateFile({
             dirname: __dirname + '/../logs',
             filename: `fd-%DATE%-${process.pid}.log`,
@@ -25,9 +26,14 @@ export class Log {
         });
     }
 
-    public error(message: string) {
+    public error(message: string, error: Error = undefined) {
         try {
-            this.logger.error(`${new Date().toISOString()}: ${message}`);
+            const stack = (error && error.stack)
+            ? (` at: ${error.stack}`)
+            : '';
+            const msg = `${new Date().toISOString()}: ${message}${stack}`;
+            this.logger.error(msg);
+            this.notifyService.error([msg]);
         } catch (e) {
             console.log('Error in logger: ' + e);
         }

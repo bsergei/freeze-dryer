@@ -28,7 +28,7 @@ function spawnSenderProcess(id: string) {
     });
 
   } catch (e) {
-    log.error(`Error while starting ${id}: ${e}`);
+    log.error(`Error while starting ${id}: ${e}`, e);
   }
 }
 
@@ -40,7 +40,7 @@ async function startApp() {
       console.log(`process: unhandledRejection: ${reason}`);
     })
     .on('uncaughtException', err => {
-      log.error(`process: uncaughtException: ${err}, at: ${err.stack}`);
+      log.error(`process: uncaughtException: ${err}, at: ${err.stack}`, err);
       console.log(`process: uncaughtException: ${err}, at: ${err.stack}`);
     });
 

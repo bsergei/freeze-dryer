@@ -7,7 +7,6 @@ import { GpioService } from './gpio.service';
 import { StorageService } from './storage.service';
 import { AdcService } from './adc.service';
 import { Log } from './logger.service';
-import { NotifyService } from './notify.service';
 import { SensorOpt } from '../model';
 import { PressureInterpolatorService } from './pressure-interpolator.service';
 
@@ -23,8 +22,7 @@ export class SensorsStatusService {
         private adcService: AdcService,
         private pressureService: PressureInterpolatorService,
         private storageService: StorageService,
-        private log: Log,
-        private notifyService: NotifyService) {
+        private log: Log) {
     }
 
     public async getFromCache() {
@@ -73,12 +71,11 @@ export class SensorsStatusService {
 
             if (errors.length > 0) {
                 for (const error of errors) {
-                    console.log(error);
+                    this.log.error(error);
                 }
-                this.notifyService.error(errors);
             }
         } catch (err) {
-            this.log.error(`Error reading temperatures: ${err}`);
+            this.log.error(`Error reading temperatures: ${err}`, err);
         }
     }
 
@@ -93,10 +90,9 @@ export class SensorsStatusService {
                 for (const error of errors) {
                     this.log.error(`Error in ${id}: writeSensors: ${error}`);
                 }
-                this.notifyService.error(errors);
             }
         } catch (e) {
-            this.log.error(`Error in ${id}: writeSensors: ${e}`);
+            this.log.error(`Error in ${id}: writeSensors: ${e}`, e);
         }
     }
 

@@ -11,7 +11,7 @@ const startApp = async () => {
       console.log(`process: unhandledRejection: ${reason}`);
     })
     .on('uncaughtException', err => {
-      log.error(`process: uncaughtException: ${err}, at: ${err.stack}`);
+      log.error(`process: uncaughtException: ${err}, at: ${err.stack}`, err);
       console.log(`process: uncaughtException: ${err}, at: ${err.stack}`);
     });
 

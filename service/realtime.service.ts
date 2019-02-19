@@ -39,13 +39,13 @@ export class RealtimeService {
                                 }
                                 success = true;
                             } catch (e) {
-                                this.log.error(`Error in RealtimeRedis (pub/sub: ch: ${ch}, msg: ${msg}): ${e}`);
+                                this.log.error(`Error in RealtimeRedis (pub/sub: ch: ${ch}, msg: ${msg}): ${e}`, e);
                             }
                             if (success) {
                                 h(res);
                             }
                         } catch (err) {
-                            this.log.error(`Error in RealtimeRedis (pub/sub: ch: ${ch}, msg: ${msg}): ${err}`);
+                            this.log.error(`Error in RealtimeRedis (pub/sub: ch: ${ch}, msg: ${msg}): ${err}`, err);
                         }
                     }
                 }
@@ -81,7 +81,7 @@ export class RealtimeService {
             await new Promise<void>((resolve, reject) => {
                 client.subscribe(channel, (err, v) => {
                     if (err) {
-                        this.log.error('RealtimeRedis error: ' + err);
+                        this.log.error('RealtimeRedis error: ' + err, err);
                         reject(err);
                     } else {
                         resolve();
@@ -110,7 +110,7 @@ export class RealtimeService {
                 c.unsubscribe(channel, (err, res) => {
                     if (err) {
                         reject(err);
-                        this.log.error('Redis error: ' + err);
+                        this.log.error('Redis error: ' + err, err);
                     } else {
                         resolve();
                     }

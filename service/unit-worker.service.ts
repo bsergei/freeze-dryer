@@ -50,7 +50,7 @@ export class UnitWorkerService {
             try {
                 await unitWorker.onStop();
             } catch (e) {
-                this.log.error(`Error in UnitWorkerService.removeAll: ${e}`);
+                this.log.error(`Error in UnitWorkerService.removeAll: ${e}`, e);
             }
         }
     }
@@ -87,7 +87,7 @@ export class UnitWorkerService {
             await this.tick();
             await this.storageService.publish('unit-worker-status', this.getStatus());
         } catch (e) {
-            this.log.error(`Error in UnitWorkerService.run: ${e}`);
+            this.log.error(`Error in UnitWorkerService.run: ${e}`, e);
         }
         setTimeout(() => this.run(), 5000);
     }
@@ -102,7 +102,7 @@ export class UnitWorkerService {
             try {
                 await unitWorker.onTick();
             } catch (e) {
-                this.log.error(`Error in UnitWorkerService.tick: ${e}`);
+                this.log.error(`Error in UnitWorkerService.tick: ${e}`, e);
             }
         }
     }
