@@ -13,7 +13,7 @@ export class Log {
             dirname: __dirname + '/../logs',
             filename: `fd-%DATE%-${process.pid}.log`,
             datePattern: 'YYYY-MM-DD-HH',
-            zippedArchive: true,
+            zippedArchive: false,
             maxSize: '20m',
             maxFiles: '5d'
           });
