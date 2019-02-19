@@ -1,27 +1,28 @@
-import { SensorType } from './sensor-type.model';
+import { SensorType, TempSensorTypeId } from './sensor-type.model';
 import { GpioStatus } from './gpio-status.model';
 
 export interface SensorTempConnected {
-    sensor_type: SensorType;
     sensor_id: string;
+    sensor_type: SensorType;
     temperature: number;
+    ts: Date;
+}
+
+export type SensorTempConnectedObj = {
+    [id in TempSensorTypeId]?: SensorTempConnected;
 }
 
 export interface SensorsStatus {
-    asOfDate: Date;
+    ts: Date;
 
-    temp_sensors: SensorTempConnected[];
-    temp_sensors_asOfDate: Date;
+    temp_sensors: SensorTempConnectedObj;
 
     gpios: GpioStatus[];
-    gpios_asOfDate: Date;
+    gpios_ts: Date;
 
     adcs: number[];
-    adcs_asOfDate: Date;
+    adcs_ts: Date;
 
-    pressure: number;
-    pressure2: number;
-    pressure3: number;
-    pressure4: number;
-    pressure_asOfDate: Date;
+    pressure: number[];
+    pressure_ts: Date;
 }

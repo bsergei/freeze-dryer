@@ -12,10 +12,7 @@ export class TemperatureParam implements ControllableParam {
 
     public async readParamValue(): Promise<number> {
         const sensorStatus = await this.sensorStatus.getFromCache();
-        const sensor = sensorStatus &&
-            sensorStatus.temp_sensors &&
-            sensorStatus.temp_sensors
-                .find(ts => ts.sensor_type.id === this.sensorTypeId);
+        const sensor = sensorStatus.temp_sensors[this.sensorTypeId];
 
         if (sensor === undefined ||
             sensor === null) {

@@ -1,14 +1,14 @@
 import * as influx from 'influx';
 import { injectable } from 'inversify';
 import { Log } from './logger.service';
-import * as os from 'os';
+// import * as os from 'os';
 import { SensorsStatus } from '../model/sensors-status.model';
 
 @injectable()
 export class InfluxService {
 
     private influxDb: influx.InfluxDB;
-    private lastCpuInfo: os.CpuInfo[] = [];
+    // private lastCpuInfo: os.CpuInfo[] = [];
 
     constructor(
         private log: Log) {
@@ -27,6 +27,33 @@ export class InfluxService {
                     tags: [
                         'type'
                     ]
+                },
+                {
+                    measurement: 'relay',
+                    fields: {
+                        value: influx.FieldType.BOOLEAN,
+                    },
+                    tags: [
+                        'type'
+                    ]
+                },
+                {
+                    measurement: 'adc_volts',
+                    fields: {
+                        value: influx.FieldType.FLOAT,
+                    },
+                    tags: [
+                        'type'
+                    ]
+                },
+                {
+                    measurement: 'pressure',
+                    fields: {
+                        value: influx.FieldType.FLOAT,
+                    },
+                    tags: [
+                        'type'
+                    ]
                 }
             ]
         });
@@ -37,7 +64,8 @@ export class InfluxService {
     public async writeSensorStatus(result: SensorsStatus) {
 
         const points: influx.IPoint[] = [];
-        for (const t of result.temp_sensors) {
+        for (const sensorId of Object.getOwnPropertyNames(result.temp_sensors)) {
+            const t = result.temp_sensors[sensorId];
             points.push({
                 measurement: 'temperature',
                 tags: {
@@ -71,69 +99,39 @@ export class InfluxService {
                     value: result.adcs[adcChannel]
                 }
             });
-        }
-
-        points.push(...[
-            {
-                measurement: 'pressure',
-                tags: {
-                    type: 'A0'
-                },
-                fields: {
-                    value: result.pressure
-                }
-            },
-            {
-                measurement: 'pressure',
-                tags: {
-                    type: 'A1'
-                },
-                fields: {
-                    value: result.pressure2
-                }
-            },
-            {
-                measurement: 'pressure',
-                tags: {
-                    type: 'A2'
-                },
-                fields: {
-                    value: result.pressure3
-                }
-            },
-            {
-                measurement: 'pressure',
-                tags: {
-                    type: 'A3'
-                },
-                fields: {
-                    value: result.pressure4
-                }
-            }
-        ]);
-
-        points.push({
-            measurement: 'system',
-            tags: {
-                type: 'freemem'
-            },
-            fields: {
-                value: os.freemem
-            }
-        });
-        const cpuUsages = this.getCpuUsage();
-        for (let i = 0; i < cpuUsages.length; i++) {
-            const cpuUsage = cpuUsages[i];
             points.push({
-                measurement: 'system',
+                measurement: 'pressure',
                 tags: {
-                    type: 'cpuUsage' + i
+                    type: 'A' + adcChannel
                 },
                 fields: {
-                    value: cpuUsage
+                    value: result.pressure[adcChannel]
                 }
-            });
+            })
         }
+
+        // points.push({
+        //     measurement: 'system',
+        //     tags: {
+        //         type: 'freemem'
+        //     },
+        //     fields: {
+        //         value: os.freemem
+        //     }
+        // });
+        // const cpuUsages = this.getCpuUsage();
+        // for (let i = 0; i < cpuUsages.length; i++) {
+        //     const cpuUsage = cpuUsages[i];
+        //     points.push({
+        //         measurement: 'system',
+        //         tags: {
+        //             type: 'cpuUsage' + i
+        //         },
+        //         fields: {
+        //             value: cpuUsage
+        //         }
+        //     });
+        // }
 
         await this.influxDb.writePoints(points, {
             database: 'holod',
@@ -141,28 +139,28 @@ export class InfluxService {
         });
     }
 
-    private getCpuUsage() {
-        const cpus = os.cpus();
-        const result: number[] = [];
+    // private getCpuUsage() {
+    //     const cpus = os.cpus();
+    //     const result: number[] = [];
 
-        if (this.lastCpuInfo.length === cpus.length) {
-            for (let i = 0, len = cpus.length; i < len; i++) {
-                const cpu = cpus[i];
-                let total = this.getTotal(cpu) - this.getTotal(this.lastCpuInfo[i]);
-                let user = cpu.times.user - this.lastCpuInfo[i].times.user;
-                result.push(Math.round(100 * user / total));
-            }
-        }
+    //     if (this.lastCpuInfo.length === cpus.length) {
+    //         for (let i = 0, len = cpus.length; i < len; i++) {
+    //             const cpu = cpus[i];
+    //             let total = this.getTotal(cpu) - this.getTotal(this.lastCpuInfo[i]);
+    //             let user = cpu.times.user - this.lastCpuInfo[i].times.user;
+    //             result.push(Math.round(100 * user / total));
+    //         }
+    //     }
 
-        this.lastCpuInfo = cpus;
-        return result;
-    }
+    //     this.lastCpuInfo = cpus;
+    //     return result;
+    // }
 
-    private getTotal(cpu: os.CpuInfo) {
-        let total = 0;
-        for (const type of Object.getOwnPropertyNames(cpu.times)) {
-            total += cpu.times[type];
-        }
-        return total;
-    }
+    // private getTotal(cpu: os.CpuInfo) {
+    //     let total = 0;
+    //     for (const type of Object.getOwnPropertyNames(cpu.times)) {
+    //         total += cpu.times[type];
+    //     }
+    //     return total;
+    // }
 }
