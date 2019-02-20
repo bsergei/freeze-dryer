@@ -1,7 +1,7 @@
 import * as calibrationDataA0 from '../calibration_A0.json';
 import * as calibrationDataA1 from '../calibration_A1.json';
-import * as calibrationDataA2 from '../calibration_A1.json';
-import * as calibrationDataA3 from '../calibration_A1.json';
+import * as calibrationDataA2 from '../calibration_A2.json';
+import * as calibrationDataA3 from '../calibration_A3.json';
 import { injectable } from 'inversify';
 
 class Point {
