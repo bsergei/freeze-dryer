@@ -158,24 +158,25 @@ export class SensorsStatusService {
     }
 
     private async updateTemperature(opt: SensorOpt, errors: string[]) {
+        const sensorTypeId = opt.sensor_type;
         const sensorId = opt.sensor_id;
-        const sensorType = sensorTypes.find(_ => _.id === sensorId);
+        const sensorType = sensorTypes.find(_ => _.id === sensorTypeId);
 
         let temperature: number = undefined;
         try {
             temperature = await this.tempSensorService.getTemperature(sensorId);
         } catch (err) {
-            errors.push(`Error reading temperature for '${sensorId}/${opt.sensor_type}': ${err}`);
+            errors.push(`Error reading temperature for '${sensorTypeId}/${sensorId}': ${err}`);
         }
 
         await this.updateInCache(status => {
             const t = status.temp_sensors;
 
             if (temperature === undefined || temperature === null) {
-                delete t[opt.sensor_type];
+                delete t[sensorTypeId];
             } else {
-                t[opt.sensor_type] = {
-                    sensor_id: sensorId,
+                t[sensorTypeId] = {
+                    sensor_id: sensorTypeId,
                     sensor_type: sensorType,
                     temperature: temperature,
                     ts: new Date

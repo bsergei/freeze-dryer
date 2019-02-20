@@ -36,7 +36,7 @@ export class SensorsWriterService {
         } catch (err) {
             this.log.error(`Error in updateTemperatureSensors: ${err}`, err);
         }
-        setTimeout(() => this.updateTemperatureSensors, 500);
+        setTimeout(() => this.updateTemperatureSensors(), 500);
     }
 
     private async updateGpioSensors() {
@@ -45,7 +45,7 @@ export class SensorsWriterService {
         } catch (err) {
             this.log.error(`Error in updateGpioSensors: ${err}`, err);
         }
-        setTimeout(() => this.updateGpioSensors, 100);
+        setTimeout(() => this.updateGpioSensors(), 100);
     }
 
     private async updatePressureSensors() {
@@ -54,6 +54,6 @@ export class SensorsWriterService {
         } catch (err) {
             this.log.error(`Error in updatePressureSensors: ${err}`, err);
         }
-        setTimeout(() => this.updatePressureSensors, 300);
+        setTimeout(() => this.updatePressureSensors(), 300);
     }
 }
