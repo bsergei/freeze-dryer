@@ -50,7 +50,7 @@ export const sensorTypes: SensorType[] = [{
   },
   {
     id: 'product',
-    display: 'Product'
+    display: 'Product 1'
   },
   {
     id: 'product2',
@@ -70,7 +70,7 @@ export const sensorTypes: SensorType[] = [{
   },
   {
     id: 'heater',
-    display: 'Heater'
+    display: 'Heater 1'
   },
   {
     id: 'heater2',
