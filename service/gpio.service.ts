@@ -2,13 +2,7 @@ import * as onoff from 'onoff';
 import { injectable } from 'inversify';
 import { GpioStatus } from '../model/gpio-status.model';
 import { Log } from './logger.service';
-
-export type Gpios = 'compressor'
-    | 'vacuum'
-    | 'fan'
-    | 'drain_valve'
-    | 'heater'
-    | 'thawing';
+import { Gpios } from '../model/gpios.model';
 
 export interface GpioDescriptor {
     port: number;

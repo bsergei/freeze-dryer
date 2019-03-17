@@ -1,5 +1,6 @@
-import { GpioService, Gpios } from '../../service/gpio.service';
+import { GpioService } from '../../service/gpio.service';
 import { injectable } from 'inversify';
+import { Gpios } from '../../model/gpios.model';
 
 @injectable()
 export class GpioUnit {

@@ -67,6 +67,7 @@ export class StorageService {
     }
 
     public async updateWithLock<T>(key: string, updateFunc: (v: T) => T, isPersistent: boolean = true) {
+        await this._isConnected;
         const redlock = await this.redlockInstance;
         const lock = await redlock.lock(key + '_lock', 1000);
         try {
