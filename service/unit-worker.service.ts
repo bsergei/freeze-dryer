@@ -3,10 +3,12 @@ import { UnitWorker } from '../unit-workers/unit-worker';
 import {
     UnitWorkerStatus,
     UnitWorkerParams,
-    UnitWorkerId
+    UnitWorkerId,
+    UnitWorkerParamTypes
 } from '../model/unit-worker-status.model';
 import { Log } from './logger.service';
 import { StorageService } from './storage.service';
+import { UnitWorkerFactory } from '../unit-workers/unit-worker.factory';
 
 @injectable()
 export class UnitWorkerService {
@@ -14,15 +16,19 @@ export class UnitWorkerService {
 
     constructor(
         private log: Log,
-        private storageService: StorageService) {
+        private storageService: StorageService,
+        private unitWorkerFactory: UnitWorkerFactory) {
         log.info('UnitWorkerService created');
         this.run();
     }
 
-    public async add<T extends UnitWorkerId>(unitWorker: UnitWorker<T>) {
-        if (this.findUnitWorkerIdx(unitWorker.kind) >= 0) {
+    public async add(id: UnitWorkerId, p: UnitWorkerParamTypes) {
+        if (this.findUnitWorkerIdx(id) >= 0) {
             return;
         }
+
+        const unitWorker = this.unitWorkerFactory.create(id, p);
+
         await unitWorker.onStart();
         this.unitWorkers.push(unitWorker);
 
@@ -34,7 +40,7 @@ export class UnitWorkerService {
                 if (!v) {
                     v = {};
                 }
-                v[unitWorker.kind] = unitParams;
+                v[unitWorker.kind] = <any>unitParams;
                 return v;
             });
 

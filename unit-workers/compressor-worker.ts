@@ -4,39 +4,21 @@ import {
     ActivateDebouncerGuard,
     MaxValueProtector,
     // MinValueProtector,
-    UnitController,
     AggregatedSwitchChecker,
     UnitParamReducer
 } from '../unit-control';
 
 import { UnitWorker } from './unit-worker';
-import { injectable } from 'inversify';
 import { CompressorWorkerParams } from '../model/compressor-worker-params.model';
 
-@injectable()
-export class CompressorWorkerFactory {
+export class CompressorWorker extends UnitWorker<'compressor'> {
     constructor(
-        private compressorUnit: CompressorUnit,
-        private tempParamFactory: TemperatureParamFactory) {
-    }
-
-    public create(p: CompressorWorkerParams) {
-        return new CompressorWorker(this.compressorUnit,
-            this.tempParamFactory,
-            p);
-    }
-}
-
-export class CompressorWorker extends UnitController implements UnitWorker<'compressor'> {
-
-    public kind: 'compressor' = 'compressor';
-
-    constructor(
-        private compressorUnit: CompressorUnit,
+        compressorUnit: CompressorUnit,
         tempParamFactory: TemperatureParamFactory,
-        private p: CompressorWorkerParams) {
+        p: CompressorWorkerParams) {
 
         super(
+            'compressor',
             compressorUnit,
             new AggregatedSwitchChecker(
                 new UnitParamReducer(
@@ -50,35 +32,8 @@ export class CompressorWorker extends UnitController implements UnitWorker<'comp
                     tempParamFactory.create('compressor'),
                     p.maxCompressorTemp)
                 ),
-            new ActivateDebouncerGuard(p.debounceTime)
+            new ActivateDebouncerGuard(p.debounceTime),
+            p
         );
-    }
-
-    public async onStart() {
-        await this.compressorUnit.activate();
-        this.lastActivated = UnitController.now();
-        this.start();
-    }
-
-    public onTick() {
-        return this.tick();
-    }
-
-    public async onStop() {
-        this.stop();
-        await this.compressorUnit.deactivate();
-        this.lastDeactivated = UnitController.now();
-    }
-
-    public getParams() {
-        return this.p;
-    }
-
-    public getLastUpdated() {
-        return this.lastUpdated;
-    }
-
-    public getStartedTime() {
-        return this.startedTime;
     }
 }

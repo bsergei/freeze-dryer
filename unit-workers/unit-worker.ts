@@ -1,12 +1,44 @@
-import { UnitControllerResult } from '../unit-control';
-import { UnitWorkerId, UnitWorkerParams } from '../model';
+import { UnitController, Unit, StateSwitchChecker, StateSwitchGuard } from '../unit-control';
+import { UnitWorkerId } from '../model';
+import { BaseUnitWorkerParams } from '../model/unit-worker-params.model';
 
-export interface UnitWorker<T extends UnitWorkerId = UnitWorkerId> {
-    kind: T;
-    onStart(): Promise<void>;
-    onTick(): Promise<UnitControllerResult>;
-    onStop(): Promise<void>;
-    getParams(): UnitWorkerParams[T];
-    getLastUpdated(): number;
-    getStartedTime(): number;
+export class UnitWorker<T extends UnitWorkerId = UnitWorkerId> extends UnitController {
+
+    constructor(
+        public kind: T,
+        unit: Unit,
+        stateSwitchChecker: StateSwitchChecker,
+        stateSwitchGuard: StateSwitchGuard,
+        private p: BaseUnitWorkerParams
+    ) {
+        super(unit, stateSwitchChecker, stateSwitchGuard);
+    }
+
+    public async onStart() {
+        await this.unit.activate();
+        this.lastActivated = UnitController.now();
+        this.start();
+    }
+
+    public onTick() {
+        return this.tick();
+    }
+
+    public async onStop() {
+        this.stop();
+        await this.unit.deactivate();
+        this.lastDeactivated = UnitController.now();
+    }
+
+    public getParams() {
+        return this.p;
+    }
+
+    public getLastUpdated() {
+        return this.lastUpdated;
+    }
+
+    public getStartedTime() {
+        return this.startedTime;
+    }
 }

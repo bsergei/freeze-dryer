@@ -112,6 +112,7 @@ export class SensorsStatusService {
     private async getAdcsAndPressure(errors: string[]) {
         const result: Partial<SensorsStatus> = {};
         result.adcs_ts = new Date();
+        result.pressure_ts = new Date();
         try {
             const adcsPromise =
                 Promise.all([
@@ -198,7 +199,7 @@ export class SensorsStatusService {
             adcs: [],
             adcs_ts: new Date(),
             pressure: [],
-            pressure_ts: new Date
+            pressure_ts: new Date()
         };
 
         return result;

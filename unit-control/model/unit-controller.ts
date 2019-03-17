@@ -32,9 +32,9 @@ export class UnitController {
     }
 
     constructor(
-        private unit: Unit,
-        private stateSwitchChecker: StateSwitchChecker,
-        private stateSwitchGuard?: StateSwitchGuard) {
+        protected unit: Unit,
+        protected stateSwitchChecker: StateSwitchChecker,
+        protected stateSwitchGuard?: StateSwitchGuard) {
         if (this.stateSwitchGuard === undefined
             || this.stateSwitchGuard === null) {
             this.stateSwitchGuard = new NullStateSwitchGuard();
