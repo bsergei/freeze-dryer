@@ -9,3 +9,4 @@ export * from './unit-worker.controller';
 export * from './system.controller';
 export * from './recipe-storage.controller';
 export * from './recipe-runner.controller';
+export * from './mock.controller';

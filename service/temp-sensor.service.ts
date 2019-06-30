@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { injectable } from 'inversify';
+import { StorageService } from './storage.service';
 
 const W1_FILE = '/sys/bus/w1/devices/w1_bus_master1/w1_master_slaves';
 
@@ -43,11 +44,6 @@ export class TempSensorService {
             return undefined;
         }
         throw new Error('Cannot get temperature');
-    }
-
-    public getTemperatureSync(sensor: string, options?: ParserOptions) {
-        const data = fs.readFileSync('/sys/bus/w1/devices/' + sensor + '/w1_slave', 'utf8');
-        return this.parseData(data, options);
     }
 
     public getSensors(): Promise<string[]> {
@@ -102,5 +98,34 @@ export class TempSensorService {
             parser = 'default';
         }
         return this.parsers[parser](data);
+    }
+}
+
+interface MockValue {
+    value: number;
+}
+
+@injectable()
+export class TempSensorServiceMock extends TempSensorService {
+
+    constructor(private storageService: StorageService) {
+        super();
+    }
+
+    public async getSensors() {
+        return this.storageService.search('mock:temp-sensor:*');
+    }
+
+    public async getTemperature(sensor: string, options?: ParserOptions) {
+        const r = await this.storageService.get<MockValue>(`mock:temp-sensor:${sensor}`);
+        if (!r) {
+            return 20.0;
+        }
+
+        return r.value;
+    }
+
+    public async setTemperature(sensor: string, value: number) {
+        await this.storageService.set(`mock:temp-sensor:${sensor}`, <MockValue>{ value: value });
     }
 }

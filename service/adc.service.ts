@@ -4,6 +4,7 @@ import * as ADS1x15 from 'raspi-kit-ads1x15';
 import * as Queue from 'sync-queue';
 import { injectable } from 'inversify';
 import { Log } from './logger.service';
+import { StorageService } from './storage.service';
 
 @injectable()
 export class AdcService {
@@ -82,5 +83,33 @@ export class AdcService {
                 });
             });
         });
+    }
+}
+
+interface MockValue {
+    value: number;
+}
+
+@injectable()
+export class AdcServiceMock extends AdcService {
+
+    constructor(log: Log, private storageService: StorageService) {
+        super(log);
+    }
+
+    public async readAdc(channel: 'A0' | 'A1' | 'A2' | 'A3') {
+        let r = await this.storageService.get<MockValue>(`mock:adc:${channel}`);
+        if (!r) {
+            r = { value: 0 };
+        }
+        return r.value;
+    }
+
+    public async writeAdc(channel: 'A0' | 'A1' | 'A2' | 'A3', value: number) {
+        await this.storageService.set(`mock:adc:${channel}`, <MockValue>{ value: value });
+    }
+
+    public async readDifferential() {
+        return 0;
     }
 }

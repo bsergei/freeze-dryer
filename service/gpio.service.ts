@@ -3,8 +3,9 @@ import { injectable } from 'inversify';
 import { GpioStatus } from '../model/gpio-status.model';
 import { Log } from './logger.service';
 import { Gpios } from '../model/gpios.model';
+import { ShutdownService } from './shutdown.service';
 
-export interface GpioDescriptor {
+interface GpioDescriptor {
     port: number;
     id: Gpios;
     name: string;
@@ -110,8 +111,8 @@ export class GpioService {
         return result;
     }
 
-    public findPin(id: Gpios) {
-        return this.pins.find(_ => _.id === id);
+    public findPort(id: Gpios) {
+        return this.pins.find(_ => _.id === id).port;
     }
 
     private getOnOffState(pinConfig: GpioDescriptor) {

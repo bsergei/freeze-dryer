@@ -8,14 +8,14 @@ export class GpioUnit {
     }
 
     public async getIsActive(id: Gpios): Promise<boolean> {
-        return this.gpioService.get(this.gpioService.findPin(id).port);
+        return this.gpioService.get(this.gpioService.findPort(id));
     }
 
     public async activate(id: Gpios): Promise<void> {
-        this.gpioService.set(this.gpioService.findPin(id).port, true);
+        this.gpioService.set(this.gpioService.findPort(id), true);
     }
 
     public async deactivate(id: Gpios): Promise<void> {
-        this.gpioService.set(this.gpioService.findPin(id).port, false);
+        this.gpioService.set(this.gpioService.findPort(id), false);
     }
 }
