@@ -1,10 +1,10 @@
-import { BASERECIPE } from './base-recipe';
-import { WfStart } from './wf-start';
-import { WfEnd } from './wf-end';
-import { WfAction } from './wf-action';
-import { WfCondition } from './wf-condition';
+import { BaseRecipe } from './base-recipe';
+import { WfStart } from './model/wf-start';
+import { WfEnd } from './model/wf-end';
+import { WfAction } from './model/wf-action';
+import { WfCondition } from './model/wf-condition';
 
-const recipe = BASERECIPE;
+const recipe = BaseRecipe;
 
 console.log('graph TD');
 for (const entry of recipe.entries) {

@@ -141,6 +141,40 @@ export class StorageService {
         });
     }
 
+    public async search(keyPattern: string) {
+        const client = await this.clientInstance;
+        return new Promise<string[]>((resolve, reject) => {
+            let cursor = '0';
+            const result: string[] = [];
+            const nextScan = () => client.scan(cursor, 'MATCH', keyPattern, 'COUNT', '100', (err, reply) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                if (!reply) {
+                    return;
+                }
+
+                cursor = reply[0];
+
+                const keys = reply[1];
+                for (const key of keys) {
+                    result.push(key);
+                }
+
+                if (cursor === '0') {
+                    resolve(result);
+                    return;
+                }
+
+                nextScan();
+            });
+
+            nextScan();
+        });
+    }
+
     public reset() {
         return new Promise<void>((resolve, reject) => {
             this.clientInstance

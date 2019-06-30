@@ -2,9 +2,12 @@ import { WorkflowRunnerServiceFactory } from './workflow-runner.service';
 import { StorageService } from '../service/storage.service';
 import { RecipeStorage } from './recipe-storage.service';
 import { Log } from '../service/logger.service';
-import { RecipeRuntimeState, RecipeRuntimeStateWrapper } from './recipe-runtime-state';
-import { RecipeEntryRuntime } from './recipe-entry-runtime';
+import { RecipeRuntimeState, RecipeRuntimeStateWrapper } from './model/recipe-runtime-state';
+import { RecipeEntryRuntime } from './model/recipe-entry-runtime';
+import { RecipeRuntime } from './recipe-runtime';
+import { injectable } from 'inversify';
 
+@injectable()
 export class RecipeRunnerService {
 
     constructor(
@@ -24,7 +27,8 @@ export class RecipeRunnerService {
 
         this.log.info(`Recipe: '${name}' is starting`);
 
-        const rtRecipe = this.recipeStorage.get(name);
+        const recipe = await this.recipeStorage.get(name);
+        const rtRecipe = new RecipeRuntime(recipe);
         await this.updateFromRuntime(rtRecipe.state);
 
         try {

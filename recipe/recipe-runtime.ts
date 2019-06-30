@@ -1,5 +1,5 @@
-import { RecipeRuntimeState } from './recipe-runtime-state';
-import { Recipe } from './recipe';
+import { RecipeRuntimeState } from './model/recipe-runtime-state';
+import { Recipe } from './model/recipe';
 
 export class RecipeRuntime {
 

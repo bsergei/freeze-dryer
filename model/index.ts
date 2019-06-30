@@ -7,3 +7,4 @@ export * from './compressor-worker-params.model';
 export * from './heater-worker-params.model';
 export * from './vacuum-worker-params.model';
 export * from './unit-worker-status.model';
+export * from '../recipe/model';

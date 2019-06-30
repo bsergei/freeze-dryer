@@ -20,6 +20,7 @@ import { NotifyService } from '../service/notify.service';
 import { SensorsWriterService } from '../service/sensors-writer.service';
 import { WebService } from '../service/web.service';
 import { RealtimeService } from '../service/realtime.service';
+import { configureRecipe } from '../recipe/ioc/ioc';
 
 const container = new Container();
 
@@ -42,5 +43,6 @@ container.bind<RealtimeService>(RealtimeService).toSelf().inSingletonScope();
 
 configureUnitControl(container);
 configureUnitWorkers(container);
+configureRecipe(container);
 
 export { container };

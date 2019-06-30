@@ -1,14 +1,16 @@
 import * as vm from 'vm';
 import { CompressorUnit, VacuumUnit, HeaterUnit, DrainValveUnit, FanUnit } from '../unit-control';
 import { SensorsStatusService } from '../service/sensors-status.service';
-import { WorkflowItem } from './workflow-item';
-import { WfStart } from './wf-start';
-import { WfAction } from './wf-action';
-import { WfCondition } from './wf-condition';
+import { WorkflowItem } from './model/workflow-item';
+import { WfStart } from './model/wf-start';
+import { WfAction } from './model/wf-action';
+import { WfCondition } from './model/wf-condition';
 import { ActionContext } from './context/action-context';
 import { WfContextValues } from './context/wf-context-values';
 import { Log } from '../service/logger.service';
+import { injectable } from 'inversify';
 
+@injectable()
 export class WorkflowRunnerServiceFactory {
 
     constructor(

@@ -1,22 +1,23 @@
-import { Recipe } from './recipe';
-import { BASERECIPE } from './base-recipe';
-import { RecipeRuntime } from './recipe-runtime';
+import { Recipe } from './model/recipe';
+import { injectable } from 'inversify';
+import { StorageService } from '../service/storage.service';
 
+@injectable()
 export class RecipeStorage {
-    public getRecipes() {
-        return [
-            'Base Recipe'
-        ];
+
+    constructor(private storage: StorageService) {
     }
 
-    public get(name: string) {
-        switch (name) {
-            case 'Base Recipe':
-                return this.toRuntimeRecipe(BASERECIPE);
-        }
+    public async getRecipes() {
+        const recipes = await this.storage.search('recipe-storage:*');
+        return recipes;
     }
 
-    private toRuntimeRecipe(recipe: Recipe) {
-        return new RecipeRuntime(recipe);
+    public async get(name: string) {
+        return await this.storage.get<Recipe>(`recipe-storage:${name}`);
+    }
+
+    public async update(recipe: Recipe) {
+        return await this.storage.set(recipe.name, recipe, true);
     }
 }

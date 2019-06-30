@@ -1,10 +1,10 @@
-import { Recipe } from './recipe';
-import { WfStart } from './wf-start';
-import { WfAction } from './wf-action';
-import { WfCondition } from './wf-condition';
-import { WfEnd } from './wf-end';
+import { Recipe } from './model/recipe';
+import { WfStart } from './model/wf-start';
+import { WfAction } from './model/wf-action';
+import { WfCondition } from './model/wf-condition';
+import { WfEnd } from './model/wf-end';
 
-export const BASERECIPE: Recipe = {
+export const BaseRecipe: Recipe = {
     name: 'Base Recipe',
     entries: [{
         id: 'init',
