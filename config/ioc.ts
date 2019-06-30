@@ -21,6 +21,7 @@ import { SensorsWriterService } from '../service/sensors-writer.service';
 import { WebService } from '../service/web.service';
 import { RealtimeService } from '../service/realtime.service';
 import { configureRecipe } from '../recipe/ioc/ioc';
+import { ShutdownService } from '../service/shutdown.service';
 
 const container = new Container();
 

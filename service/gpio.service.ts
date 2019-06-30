@@ -17,7 +17,7 @@ export class GpioService {
 
     private pins: GpioDescriptor[];
 
-    constructor(private log: Log) {
+    constructor(private log: Log, private shutdownService: ShutdownService) {
         this.pins = [
             {
                 port: 13,
@@ -63,9 +63,13 @@ export class GpioService {
             }
         ];
 
-        process.on('SIGINT', () => {
+        this.shutdownService.onSigint(() => {
             for (const pin of this.pins) {
-                pin.pin.unexport();
+                try {
+                    pin.pin.unexport();
+                } catch (e) {
+                    this.log.error(e);
+                }
             }
             this.log.info('GPIO service stopped');
         });

@@ -2,13 +2,15 @@ import { container } from './config/ioc';
 import * as cp from 'child_process';
 import { Log } from './service/logger.service';
 import { WebService } from './service/web.service';
+import { ShutdownService } from './service/shutdown.service';
 
-const log = container.resolve(Log);
+const log = container.get(Log);
+const shutdownService = container.get(ShutdownService);
 let shouldExit = false;
 
 function spawnSenderProcess(id: string) {
   try {
-    let senderProcess = cp.fork(__dirname + `/${id}`, ['child'], { silent: true });
+    let senderProcess = cp.fork(__dirname + `/${id}`, ['child', ...process.argv.slice(2)]);
     senderProcess.on('exit', (code, signal) => {
       log.info(`${id} exited...`);
       if (!shouldExit) {
@@ -19,12 +21,8 @@ function spawnSenderProcess(id: string) {
 
     log.info(`${id} started: pid=${senderProcess.pid}`);
 
-    process.on('SIGINT', () => {
+    shutdownService.onSigint(() => {
       shouldExit = true;
-      if (senderProcess) {
-        senderProcess.kill();
-        senderProcess = undefined;
-      }
     });
 
   } catch (e) {
