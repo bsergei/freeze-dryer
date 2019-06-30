@@ -1,5 +1,5 @@
-import { WorkflowItem } from "./workflow-item";
-import { RecipeEntry } from "./recipe-entry";
+import { WorkflowItem } from './workflow-item';
+import { RecipeEntry } from './recipe-entry';
 
 export class RecipeEntryRuntime {
     public isStarted = false;

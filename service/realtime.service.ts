@@ -94,12 +94,12 @@ export class RealtimeService {
     }
 
     private async unsubscribe(channel: string, handler: (message: any) => void) {
-        var handlers = this.handlers[channel];
+        let handlers = this.handlers[channel];
         if (!handlers) {
             handlers = [];
             this.handlers[channel] = handlers;
         }
-        var index = handlers.indexOf(handler);
+        const index = handlers.indexOf(handler);
         if (index > -1) {
             handlers.splice(index, 1);
         }

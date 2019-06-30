@@ -4,7 +4,7 @@ import { WfAction } from './wf-action';
 import { WfCondition } from './wf-condition';
 import { WfEnd } from './wf-end';
 
-export const BaseRecipe: Recipe = {
+export const BASERECIPE: Recipe = {
     name: 'Base Recipe',
     entries: [{
         id: 'init',
@@ -94,4 +94,4 @@ export const BaseRecipe: Recipe = {
         ]
     }
     ]
-}
+};

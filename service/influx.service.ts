@@ -107,7 +107,7 @@ export class InfluxService {
                 fields: {
                     value: result.pressure[adcChannel]
                 }
-            })
+            });
         }
 
         // points.push({

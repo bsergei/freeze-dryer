@@ -1,4 +1,4 @@
-import { RecipeEntryRuntime } from "./recipe-entry-runtime";
+import { RecipeEntryRuntime } from './recipe-entry-runtime';
 
 export class RecipeRuntimeState {
     public isStarted: boolean = false;

@@ -1,4 +1,4 @@
-import { Gpios } from "./gpios.model";
+import { Gpios } from './gpios.model';
 
 export interface GpioStatus {
     port: number;

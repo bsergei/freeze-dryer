@@ -10,7 +10,7 @@ export interface SensorTempConnected {
 
 export type SensorTempConnectedObj = {
     [id in TempSensorTypeId]?: SensorTempConnected;
-}
+};
 
 export interface SensorsStatus {
     ts: Date;

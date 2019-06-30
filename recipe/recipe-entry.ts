@@ -1,4 +1,4 @@
-import { WorkflowItem } from "./workflow-item";
+import { WorkflowItem } from './workflow-item';
 
 export interface RecipeEntry {
     id: string;

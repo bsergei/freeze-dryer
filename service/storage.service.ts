@@ -161,6 +161,6 @@ export class StorageService {
                 }
                 resolve();
             });
-        })
+        });
     }
 }

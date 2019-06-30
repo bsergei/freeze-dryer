@@ -6,9 +6,6 @@ import { injectable } from 'inversify';
 @injectable()
 export class NotifyService {
 
-  constructor() {
-  }
-
   public error(errors: string[]) {
     // const errorsStr = this.getErrorsString(errors);
     // return new Promise((resolve, reject) => {

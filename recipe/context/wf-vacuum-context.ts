@@ -1,4 +1,4 @@
-import { SensorsStatus } from "../../model/sensors-status.model";
+import { SensorsStatus } from '../../model/sensors-status.model';
 
 export class WfVacuumContext {
     constructor(private sensors: SensorsStatus) {

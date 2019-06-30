@@ -181,7 +181,7 @@ export class SensorsStatusService {
                     sensor_type: sensorType,
                     temperature: temperature,
                     ts: new Date
-                }
+                };
             }
 
             return status;
