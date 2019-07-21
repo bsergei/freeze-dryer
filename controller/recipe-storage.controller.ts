@@ -1,4 +1,4 @@
-import { controller, httpGet, httpPost } from 'inversify-express-utils';
+import { controller, httpGet, httpPost, httpDelete } from 'inversify-express-utils';
 import { RecipeStorage } from '../recipe/recipe-storage.service';
 import { Request } from 'express';
 import { Recipe } from '../recipe/model/recipe';
@@ -23,5 +23,10 @@ export class RecipeStorageController {
         const item = request.body as Recipe;
         await this.storage.update(item);
         return await this.storage.get(item.name);
+    }
+
+    @httpDelete('/:id')
+    public async del(request: Request) {
+        await this.storage.delete(request.params.id);
     }
 }

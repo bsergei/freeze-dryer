@@ -141,6 +141,41 @@ export class StorageService {
         });
     }
 
+    public delete(keys: string[], isPersistent: boolean = true) {
+        return new Promise<boolean>((resolve, reject) => {
+            this.clientInstance
+                .then(client => {
+                    try {
+                        client.del(keys, (err, reply) => {
+                            if (err) {
+                                this.log.error('Redis error: ' + err, err);
+                                reject(err);
+                                return;
+                            }
+                            if (isPersistent) {
+                                this.bgSaveQueue.place(() => {
+                                    try {
+                                        client.bgsave(() => {
+                                            resolve(true);
+                                        });
+                                        this.bgSaveQueue.next();
+                                    } catch (bgSaveError) {
+                                        this.log.error('Redis error in BGSAVE: ' + bgSaveError, bgSaveError);
+                                        reject(bgSaveError);
+                                    }
+                                });
+                            } else {
+                                resolve(true);
+                            }
+                        });
+                    } catch (setError) {
+                        this.log.error('Redis error in SET: ' + setError, setError);
+                        reject(setError);
+                    }
+                });
+        });
+    }
+
     public async search(keyPattern: string) {
         const client = await this.clientInstance;
         return new Promise<string[]>((resolve, reject) => {
