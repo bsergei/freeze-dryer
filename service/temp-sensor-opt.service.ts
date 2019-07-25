@@ -11,6 +11,10 @@ export class TempSensorOptService {
     constructor(private storageService: StorageService) {
     }
 
+    public reset() {
+        return this.storageService.delete([storageSensorOptsKey], true);
+    }
+
     public async getSensorOpts() {
         return (await this.storageService.get<SensorOpt[]>(storageSensorOptsKey)) || [];
     }
