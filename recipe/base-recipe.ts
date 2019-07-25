@@ -7,7 +7,6 @@ import { WfEnd } from './model/wf-end';
 export const BaseRecipe: Recipe = {
     name: 'Base Recipe',
     entries: [{
-        id: 'init',
         name: 'Initialization',
         workflow: [
             <WfStart>{
@@ -28,7 +27,6 @@ export const BaseRecipe: Recipe = {
         ]
     },
     {
-        id: 'freeze',
         name: 'Freeze',
         workflow: [
             <WfStart>{

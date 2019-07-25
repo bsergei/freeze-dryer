@@ -1,24 +1,21 @@
 import { RecipeEntryRuntime } from './recipe-entry-runtime';
+import { SharedData } from './shared-data';
 
-export class RecipeRuntimeState {
-    public isStarted: boolean = false;
+export class RecipeRuntimeState implements SharedData {
     public isFinished: boolean = false;
     public isAborted: boolean = false;
 
     public steps: RecipeEntryRuntime[] = [];
     public currentStep: RecipeEntryRuntime;
 
-    constructor(public name: string) {
-    }
-}
+    public error: Error;
 
-export class RecipeRuntimeStateWrapper {
-    constructor(private r: RecipeRuntimeState) {
+    constructor(public recipeName: string) {
     }
 
-    public get context(): string {
-        if (this.r && this.r.currentStep) {
-            return `'${this.r.name}':'${this.r.currentStep.recipeEntry.name}':'${this.r.currentStep.currentWorkflowItem.id}'`;
+    public get cursorStr(): string {
+        if (this.currentStep && this.currentStep.recipeEntry && this.currentStep.currentWorkflowItem) {
+            return `'${this.recipeName}':'${this.currentStep.recipeEntry.name}':'${this.currentStep.currentWorkflowItem.id}'`;
         } else {
             return '';
         }

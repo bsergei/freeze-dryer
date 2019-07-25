@@ -6,7 +6,7 @@ export class WfUnitsContext {
     }
 
     public get compressor(): boolean {
-        if (this.values.compressorUnit !== undefined) {
+        if (this.values && this.values.compressorUnit !== undefined) {
             return this.values.compressorUnit;
         }
         const gpio = this.sensors.gpios.find(i => i.id === 'compressor');
@@ -18,7 +18,7 @@ export class WfUnitsContext {
     }
 
     public get vacuum(): boolean {
-        if (this.values.vacuumUnit !== undefined) {
+        if (this.values && this.values.vacuumUnit !== undefined) {
             return this.values.vacuumUnit;
         }
         const gpio = this.sensors.gpios.find(i => i.id === 'vacuum');
@@ -30,7 +30,7 @@ export class WfUnitsContext {
     }
 
     public get heater(): boolean {
-        if (this.values.heaterUnit !== undefined) {
+        if (this.values && this.values.heaterUnit !== undefined) {
             return this.values.heaterUnit;
         }
         const gpio = this.sensors.gpios.find(i => i.id === 'heater');
@@ -42,7 +42,7 @@ export class WfUnitsContext {
     }
 
     public get drain_valve(): boolean {
-        if (this.values.drainValveUnit !== undefined) {
+        if (this.values && this.values.drainValveUnit !== undefined) {
             return this.values.drainValveUnit;
         }
         const gpio = this.sensors.gpios.find(i => i.id === 'drain_valve');
@@ -54,7 +54,7 @@ export class WfUnitsContext {
     }
 
     public get fan(): boolean {
-        if (this.values.fanUnit !== undefined) {
+        if (this.values && this.values.fanUnit !== undefined) {
             return this.values.fanUnit;
         }
         const gpio = this.sensors.gpios.find(i => i.id === 'fan');

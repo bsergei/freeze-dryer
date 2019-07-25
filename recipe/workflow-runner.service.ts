@@ -1,5 +1,5 @@
 import * as vm from 'vm';
-import { CompressorUnit, VacuumUnit, HeaterUnit, DrainValveUnit, FanUnit } from '../unit-control';
+import { CompressorUnit, VacuumUnit, HeaterUnit, DrainValveUnit, FanUnit, Unit } from '../unit-control';
 import { SensorsStatusService } from '../service/sensors-status.service';
 import { WorkflowItem } from './model/workflow-item';
 import { WfStart } from './model/wf-start';
@@ -9,6 +9,7 @@ import { ActionContext } from './context/action-context';
 import { WfContextValues } from './context/wf-context-values';
 import { Log } from '../service/logger.service';
 import { injectable } from 'inversify';
+import { SharedData } from './model/shared-data';
 
 @injectable()
 export class WorkflowRunnerServiceFactory {
@@ -23,7 +24,7 @@ export class WorkflowRunnerServiceFactory {
         private fanUnit: FanUnit) {
     }
 
-    public create(workflow: WorkflowItem[]): WorkflowRunnerService {
+    public create(workflow: WorkflowItem[], sharedData: SharedData): WorkflowRunnerService {
         return new WorkflowRunnerService(
             this.logger,
             this.sensorsStatusService,
@@ -32,15 +33,20 @@ export class WorkflowRunnerServiceFactory {
             this.heaterUnit,
             this.drainValveUnit,
             this.fanUnit,
-            workflow
+            workflow,
+            sharedData
         );
     }
 }
 
 export class WorkflowRunnerService {
-    private sharedData: { context: string };
     private currentItem: WorkflowItem;
     private startTime: Date;
+
+    private initialized: boolean;
+    private conditionResult: boolean;
+    private reachedEnd: boolean;
+    private isRun: boolean;
 
     constructor(
         private logger: Log,
@@ -50,45 +56,87 @@ export class WorkflowRunnerService {
         private heaterUnit: HeaterUnit,
         private drainValveUnit: DrainValveUnit,
         private fanUnit: FanUnit,
-        private workflow: WorkflowItem[]) {
+        private workflow: WorkflowItem[],
+        private sharedData: SharedData) {
+        this.initialized = false;
     }
 
-    public start(sharedData: { context: string }) {
-        this.startTime = new Date();
-        const startItem = this.workflow.find(i => i.type === 'start');
-        this.sharedData = sharedData;
-        this.currentItem = startItem;
-    }
-
-    public getCurrent() {
+    public getCurrent(): WorkflowItem {
         return this.currentItem;
     }
 
+    public isReachedEnd(): boolean {
+        return this.reachedEnd;
+    }
+
+    public moveNext(): boolean {
+        if (this.currentItem === undefined && !this.initialized) {
+            this.initialized = true;
+            this.reachedEnd = false;
+            this.startTime = new Date();
+            this.currentItem = this.workflow.find(i => i.type === 'start');
+        } else {
+            if (!this.isRun) {
+                throw new Error('Current item was not run');
+            }
+
+            switch (this.currentItem.type) {
+                case 'start':
+                    const nextIdStart = (this.currentItem as WfStart).next_id;
+                    this.currentItem = this.getItem(nextIdStart);
+                    break;
+
+                case 'end':
+                    this.reachedEnd = true;
+                    this.currentItem = undefined;
+                    break;
+
+                case 'action':
+                    const actionItem = (this.currentItem as WfAction);
+                    this.currentItem = this.getItem(actionItem.next_id);
+                    break;
+
+                case 'condition':
+                    const conditionItem = (this.currentItem as WfCondition);
+                    if (this.conditionResult === undefined) {
+                        throw new Error('Condition result is not valid.');
+                    }
+
+                    const nextIdCondition = this.conditionResult === true
+                        ? conditionItem.next_id_true
+                        : conditionItem.next_id_false;
+                    this.currentItem = this.getItem(nextIdCondition);
+                    this.conditionResult = undefined;
+                    break;
+            }
+        }
+
+        this.isRun = false;
+        return this.isCurrentItemValid();
+    }
+
     public async runCurrentItem() {
+        if (!this.isCurrentItemValid()) {
+            return;
+        }
+
         switch (this.currentItem.type) {
-            case 'end':
-                return false;
-
-            case 'start':
-                const nextIdStart = (this.currentItem as WfStart).next_id;
-                this.currentItem = this.getItem(nextIdStart);
-                return this.currentItem !== undefined && this.currentItem !== null;
-
             case 'action':
                 const actionItem = (this.currentItem as WfAction);
                 await this.runAction(actionItem);
-                this.currentItem = this.getItem(actionItem.next_id);
-                return this.currentItem !== undefined && this.currentItem !== null;
+                break;
 
             case 'condition':
                 const conditionItem = (this.currentItem as WfCondition);
-                const result = await this.runCondition(conditionItem);
-                const nextIdCondition = result === true
-                    ? conditionItem.next_id_true
-                    : conditionItem.next_id_false;
-                this.currentItem = this.getItem(nextIdCondition);
-                return this.currentItem !== undefined && this.currentItem !== null;
+                this.conditionResult = await this.runCondition(conditionItem);
+                break;
         }
+
+        this.isRun = true;
+    }
+
+    private isCurrentItemValid() {
+        return this.currentItem !== undefined && this.currentItem !== null;
     }
 
     private getItem(id: string): WorkflowItem {
@@ -96,6 +144,10 @@ export class WorkflowRunnerService {
     }
 
     private async runAction(item: WfAction) {
+        if (!item.cmd) {
+            return;
+        }
+
         const values = new WfContextValues();
         const sensorsStatus = await this.sensorsStatusService.getFromCache();
         const dataContext = new ActionContext(
@@ -106,55 +158,34 @@ export class WorkflowRunnerService {
             values);
         const actionContext = vm.createContext(dataContext);
         vm.runInContext(item.cmd, actionContext);
-        if (values.waitDelay) {
-            await new Promise(resolve => setTimeout(() => resolve(), values.waitDelay));
-        }
-        if (values.compressorUnit !== undefined) {
-            if (values.compressorUnit === true) {
-                await this.compressorUnit.activate();
-            } else {
-                await this.compressorUnit.deactivate();
-            }
-        }
-        if (values.vacuumUnit !== undefined) {
-            if (values.vacuumUnit === true) {
-                await this.vacuumUnit.activate();
-            } else {
-                await this.vacuumUnit.deactivate();
-            }
-        }
-        if (values.heaterUnit !== undefined) {
-            if (values.heaterUnit === true) {
-                await this.heaterUnit.activate();
-            } else {
-                await this.heaterUnit.deactivate();
-            }
-        }
-        if (values.drainValveUnit !== undefined) {
-            if (values.drainValveUnit === true) {
-                await this.drainValveUnit.activate();
-            } else {
-                await this.drainValveUnit.deactivate();
-            }
-        }
-        if (values.fanUnit !== undefined) {
-            if (values.fanUnit === true) {
-                await this.fanUnit.activate();
-            } else {
-                await this.fanUnit.deactivate();
-            }
+
+        await this.switchUnitIfNeed(values.compressorUnit, this.compressorUnit);
+        await this.switchUnitIfNeed(values.vacuumUnit, this.vacuumUnit);
+        await this.switchUnitIfNeed(values.heaterUnit, this.heaterUnit);
+        await this.switchUnitIfNeed(values.drainValveUnit, this.drainValveUnit);
+        await this.switchUnitIfNeed(values.fanUnit, this.fanUnit);
+    }
+
+    private async switchUnitIfNeed(value: boolean, unit: Unit) {
+        if (value === true) {
+            await unit.activate();
+        } else if (value === false) {
+            await unit.deactivate();
         }
     }
 
     private async runCondition(item: WfCondition) {
-        const values = new WfContextValues();
+        if (!item.cmd) {
+            throw new Error(`Command is not set for condition '${item.id}'`);
+        }
+
         const sensorsStatus = await this.sensorsStatusService.getFromCache();
         const dataContext = new ActionContext(
             this.sharedData,
             this.logger,
             this.startTime,
             sensorsStatus,
-            values);
+            undefined);
         const actionContext = vm.createContext(dataContext);
         const result = vm.runInContext(item.cmd, actionContext);
         return result as boolean;

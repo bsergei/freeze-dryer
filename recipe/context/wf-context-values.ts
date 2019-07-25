@@ -4,6 +4,4 @@ export class WfContextValues {
     public heaterUnit: boolean;
     public drainValveUnit: boolean;
     public fanUnit: boolean;
-
-    public waitDelay: number;
 }
