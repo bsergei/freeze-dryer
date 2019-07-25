@@ -108,16 +108,19 @@ interface MockValue {
 @injectable()
 export class TempSensorServiceMock extends TempSensorService {
 
+    private static KeyPrefix = 'mock:temp-sensor:';
+
     constructor(private storageService: StorageService) {
         super();
     }
 
     public async getSensors() {
-        return this.storageService.search('mock:temp-sensor:*');
+        return (await this.storageService.search(`${TempSensorServiceMock.KeyPrefix}*`))
+            .map(k => k.substring(TempSensorServiceMock.KeyPrefix.length));
     }
 
     public async getTemperature(sensor: string, options?: ParserOptions) {
-        const r = await this.storageService.get<MockValue>(`mock:temp-sensor:${sensor}`);
+        const r = await this.storageService.get<MockValue>(`${TempSensorServiceMock.KeyPrefix}${sensor}`);
         if (!r) {
             return 20.0;
         }
@@ -126,6 +129,6 @@ export class TempSensorServiceMock extends TempSensorService {
     }
 
     public async setTemperature(sensor: string, value: number) {
-        await this.storageService.set(`mock:temp-sensor:${sensor}`, <MockValue>{ value: value });
+        await this.storageService.set(`${TempSensorServiceMock.KeyPrefix}${sensor}`, <MockValue>{ value: value });
     }
 }
