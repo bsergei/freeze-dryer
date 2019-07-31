@@ -1,14 +1,12 @@
 import { WorkflowItem } from './workflow-item';
-import { RecipeEntry } from './recipe-entry';
 
-export class RecipeEntryRuntime {
-    public isFinished = false;
+export interface RecipeEntryRuntime {
+    recipeEntryName: string;
 
-    public startTime: Date;
-    public finishTime: Date;
+    isFinished: boolean;
 
-    public currentWorkflowItem: WorkflowItem;
+    startTime: Date;
+    finishTime?: Date;
 
-    constructor(public recipeEntry: RecipeEntry) {
-    }
+    currentWorkflowItem?: WorkflowItem;
 }

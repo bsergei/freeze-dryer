@@ -23,7 +23,7 @@ export class ActionContext {
         sensors: SensorsStatus,
         values: WfContextValues) {
         this.data = data;
-        this.time = new WfTimeContext(startTime);
+        this.time = new WfTimeContext(startTime, values);
         this.units = new WfUnitsContext(values, sensors);
         this.temp = new WfTempContext(sensors);
         this.vacuum = new WfVacuumContext(sensors);

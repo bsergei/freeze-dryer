@@ -31,15 +31,26 @@ export class RecipeRunnerService {
         this.log.info(`Recipe: '${recipeName}' is starting`);
 
         const recipe = await this.recipeStorage.get(recipeName);
-        const state = new RecipeRuntimeState(recipe.name);
+        const state: RecipeRuntimeState = {
+            recipeName: recipe.name,
+            startDate: new Date(),
+            isFinished: false,
+            isAborted: false,
+            steps: [],
+            cursorStr: undefined
+        };
+
         await this.updateFromRuntime(state, true);
 
         try {
             for (const entry of recipe.entries) {
                 this.log.info(`Recipe: '${recipeName}'.'${entry.name}' is starting`);
 
-                const runtimeEntry = new RecipeEntryRuntime(entry);
-                runtimeEntry.startTime = new Date();
+                const runtimeEntry: RecipeEntryRuntime = {
+                    recipeEntryName: entry.name,
+                    isFinished: false,
+                    startTime: new Date()
+                };
 
                 state.steps.push(runtimeEntry);
                 state.currentStep = runtimeEntry;
@@ -51,7 +62,9 @@ export class RecipeRunnerService {
                 //
                 const wfRunner = this.workflowRunnerServiceFactory.create(entry.workflow, state);
                 while (wfRunner.moveNext()) {
-                    runtimeEntry.currentWorkflowItem = wfRunner.getCurrent();
+                    const wf = wfRunner.getCurrent();
+                    runtimeEntry.currentWorkflowItem = wf;
+                    state.cursorStr = this.getCursorStr(recipe.name, entry.name, wf.id);
 
                     await this.updateFromRuntime(state);
                     if (state.isAborted) {
@@ -74,7 +87,7 @@ export class RecipeRunnerService {
             }
             return true;
         } catch (e) {
-            await this.updateSetError(e);
+            await this.updateSetError(recipeName, e);
         } finally {
             await this.updateSetFinished();
         }
@@ -105,6 +118,7 @@ export class RecipeRunnerService {
         const result = await this.updateState(v => {
             if (v) {
                 v.isFinished = true;
+                v.endDate = new Date();
             }
             return v;
         });
@@ -116,17 +130,14 @@ export class RecipeRunnerService {
         return result;
     }
 
-    private async updateSetError(error) {
+    private async updateSetError(recipeName: string, error: Error) {
+        this.log.error(`Recipe: '${recipeName}' FAILED`, error);
         const result = await this.updateState(v => {
             if (v) {
-                v.error = error;
+                v.error = error.message;
             }
             return v;
         });
-
-        if (result && result.error) {
-            this.log.error(`Recipe: '${result.recipeName}' FAILED with error: ${error}`);
-        }
 
         return result;
     }
@@ -160,5 +171,9 @@ export class RecipeRunnerService {
             }
             return state;
         });
+    }
+
+    public getCursorStr(recipeName: string, entryName: string, wfId: string): string {
+        return `'${recipeName}':'${entryName}':'${wfId}'`;
     }
 }

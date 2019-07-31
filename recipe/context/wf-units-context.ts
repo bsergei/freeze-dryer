@@ -62,6 +62,6 @@ export class WfUnitsContext {
     }
 
     public set fan(value: boolean) {
-        this.values.drainValveUnit = value;
+        this.values.fanUnit = value;
     }
 }

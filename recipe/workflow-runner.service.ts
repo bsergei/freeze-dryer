@@ -159,6 +159,10 @@ export class WorkflowRunnerService {
         const actionContext = vm.createContext(dataContext);
         vm.runInContext(item.cmd, actionContext);
 
+        if (values.delay) {
+            await new Promise((resolve) => setTimeout(() => resolve(), values.delay));
+        }
+
         await this.switchUnitIfNeed(values.compressorUnit, this.compressorUnit);
         await this.switchUnitIfNeed(values.vacuumUnit, this.vacuumUnit);
         await this.switchUnitIfNeed(values.heaterUnit, this.heaterUnit);
