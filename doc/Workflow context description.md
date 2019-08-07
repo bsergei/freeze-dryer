@@ -11,7 +11,7 @@ units.vacuum|Property|"units.vacuum = true"|Read/write vacuum's state
 units.heater|Property|"units.heater = true"|Read/write heater's state
 units.drain_valve|Property|"units.drain_valve = true"|Read/write drain_valve's state
 units.fan|Property|"units.fan = true"|Read/write fan's state
-temp.{sensor_id}|Property|"temp.heater1 > 30"|Read specified temperature sensor
+temp.{sensor_id}.temperature|Property|"temp.heater1.temperature > 30"|Read specified temperature sensor
 vacuum.A0|Property|"vacuum.A0 < 200"|Read specified vacuum sensor value in mTor
 vacuum.A1|Property|"vacuum.A1 < 200"|Read specified vacuum sensor value in mTor
 log(msg)|Function|"log('This will be logged')"|Print out message in log file
