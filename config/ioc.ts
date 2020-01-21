@@ -22,6 +22,7 @@ import { WebService } from '../service/web.service';
 import { RealtimeService } from '../service/realtime.service';
 import { configureRecipe } from '../recipe/ioc/ioc';
 import { ShutdownService } from '../service/shutdown.service';
+import { TelegramService } from '../service/telegram.service';
 
 const isMock = process.argv.indexOf('mock') >= 0;
 
@@ -50,6 +51,7 @@ container.bind<NotifyService>(NotifyService).toSelf().inSingletonScope();
 container.bind<SensorsWriterService>(SensorsWriterService).toSelf().inSingletonScope();
 container.bind<WebService>(WebService).toSelf().inSingletonScope();
 container.bind<RealtimeService>(RealtimeService).toSelf().inSingletonScope();
+container.bind<TelegramService>(TelegramService).toSelf().inSingletonScope();
 
 configureUnitControl(container);
 configureUnitWorkers(container);

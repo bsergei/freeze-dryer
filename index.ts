@@ -3,6 +3,7 @@ import * as cp from 'child_process';
 import { Log } from './service/logger.service';
 import { WebService } from './service/web.service';
 import { ShutdownService } from './service/shutdown.service';
+import { TelegramService } from './service/telegram.service';
 
 const log = container.get(Log);
 const shutdownService = container.get(ShutdownService);
@@ -44,6 +45,10 @@ async function startApp() {
 
   const ws = container.resolve(WebService);
   await ws.init(container);
+
+  const messenger = container.resolve(TelegramService);
+  await messenger.init();
+
   spawnSenderProcess('child.sender');
   spawnSenderProcess('child.sensors');
 }

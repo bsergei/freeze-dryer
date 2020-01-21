@@ -21,7 +21,7 @@ export class RecipeRunnerService {
     public async startAsFireAndForget(recipeName: string) {
         let state = await this.getCurrentState();
         if (state && !state.isFinished) {
-            this.log.info(`Cannot start recipe ${recipeName}: another recipe is running`);
+            this.logInfo(`Cannot start recipe ${recipeName}: another recipe is running`);
             return false;
         }
 
@@ -29,8 +29,21 @@ export class RecipeRunnerService {
         return true;
     }
 
+    public async getCurrentState() {
+        return await this.storageService.get<RecipeRuntimeState>('recipe-status');
+    }
+
+    public async abort() {
+        const result = await this.updateSetAborted();
+        return result && result.isAborted === true;
+    }
+
+    public getCursorStr(recipeName: string, entryName: string, wfId: string): string {
+        return `'${recipeName}':'${entryName}':'${wfId}'`;
+    }
+
     private async start(recipeName: string) {
-        this.log.info(`Recipe: '${recipeName}' is starting`);
+        this.logInfo(`Recipe: '${recipeName}' is starting`);
 
         const recipe = await this.recipeStorage.get(recipeName);
         const state: RecipeRuntimeState = {
@@ -46,7 +59,7 @@ export class RecipeRunnerService {
 
         try {
             for (const entry of recipe.entries) {
-                this.log.info(`Recipe: '${recipeName}'.'${entry.name}' is starting`);
+                this.logInfo(`Recipe: '${recipeName}'.'${entry.name}' is starting`);
 
                 const runtimeEntry: RecipeEntryRuntime = {
                     recipeEntryName: entry.name,
@@ -70,7 +83,7 @@ export class RecipeRunnerService {
 
                     await this.updateFromRuntime(state);
                     if (state.isAborted) {
-                        this.log.info(`Recipe: '${recipeName}' detected abort`);
+                        this.logInfo(`Recipe: '${recipeName}' detected abort`);
                         return true;
                     }
 
@@ -83,25 +96,29 @@ export class RecipeRunnerService {
 
                 await this.updateFromRuntime(state);
                 if (state.isAborted) {
-                    this.log.info(`Recipe: '${recipeName}' detected abort`);
+                    this.logInfo(`Recipe: '${recipeName}' detected abort`);
                     return true;
                 }
+
+                this.logInfo(`Recipe: '${recipeName}'.'${entry.name}' is finished.`);
             }
             return true;
         } catch (e) {
-            await this.updateSetError(recipeName, e);
+            await this.updateSetError(state, recipeName, e);
         } finally {
             await this.updateSetFinished();
         }
     }
 
-    public async getCurrentState() {
-        return await this.storageService.get<RecipeRuntimeState>('recipe-status');
+    private logInfo(msg: string) {
+        this.log.info(msg);
+        this.storageService.publish('recipe-log', msg);
     }
 
-    public async abort() {
-        const result = await this.updateSetAborted();
-        return result && result.isAborted === true;
+    private logError(msg: string, error: Error) {
+        this.log.error(msg, error);
+        this.storageService.publish('recipe-log', msg);
+        this.storageService.publish('recipe-log', error.message);
     }
 
     private async updateState(func: (v: RecipeRuntimeState) => RecipeRuntimeState) {
@@ -126,14 +143,18 @@ export class RecipeRunnerService {
         });
 
         if (result && result.isFinished) {
-            this.log.info(`Recipe: '${result.recipeName}' finished`);
+            this.logInfo(`Recipe: '${result.recipeName}' finished`);
         }
 
         return result;
     }
 
-    private async updateSetError(recipeName: string, error: Error) {
-        this.log.error(`Recipe: '${recipeName}' FAILED`, error);
+    private async updateSetError(state: RecipeRuntimeState, recipeName: string, error: Error) {
+        const cursorStr = (state && state.cursorStr)
+            ? state.cursorStr
+            : '[empty]';
+
+        this.logError(`Recipe '${recipeName}' FAILED at ${cursorStr}`, error);
         const result = await this.updateState(v => {
             if (v) {
                 v.error = error.message;
@@ -153,7 +174,7 @@ export class RecipeRunnerService {
         });
 
         if (result && result.isAborted) {
-            this.log.info(`Recipe: '${result.recipeName}' was requested to abort`);
+            this.logInfo(`Recipe: '${result.recipeName}' was requested to abort`);
         }
 
         return result;
@@ -173,9 +194,5 @@ export class RecipeRunnerService {
             }
             return state;
         });
-    }
-
-    public getCursorStr(recipeName: string, entryName: string, wfId: string): string {
-        return `'${recipeName}':'${entryName}':'${wfId}'`;
     }
 }

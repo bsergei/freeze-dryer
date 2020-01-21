@@ -29,6 +29,7 @@
     "serve-static": "^1.13.2",
     "socket.io": "^2.2.0",
     "sync-queue": "0.0.2",
+    "telegraf": "^3.35.0",
     "winston": "^3.0.0",
     "winston-daily-rotate-file": "^3.3.2"
   },
