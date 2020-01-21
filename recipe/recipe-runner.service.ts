@@ -14,6 +14,8 @@ export class RecipeRunnerService {
         private recipeStorage: RecipeStorage,
         private storageService: StorageService,
         private log: Log) {
+        // Cleanup and recover from unexpected shutdowns.
+        this.storageService.delete(['recipe-status']);
     }
 
     public async startAsFireAndForget(recipeName: string) {
