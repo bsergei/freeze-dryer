@@ -6,6 +6,7 @@ import { RecipeRuntimeState } from './model/recipe-runtime-state';
 import { RecipeEntryRuntime } from './model/recipe-entry-runtime';
 import { injectable } from 'inversify';
 import { ShutdownService } from '../service/shutdown.service';
+import { Recipe, RecipeEntry } from './model';
 
 @injectable()
 export class RecipeRunnerService {
@@ -21,14 +22,14 @@ export class RecipeRunnerService {
         this.shutdownService.onSigint(() => this.abort());
     }
 
-    public async startAsFireAndForget(recipeName: string) {
+    public async startAsFireAndForget(recipeName: string, recipeEntryName?: string) {
         let state = await this.getCurrentState();
         if (state && !state.isFinished) {
             this.logInfo(`Cannot start recipe ${recipeName}: another recipe is running`);
             return false;
         }
 
-        this.start(recipeName);
+        this.start(recipeName, recipeEntryName);
         return true;
     }
 
@@ -45,8 +46,8 @@ export class RecipeRunnerService {
         return `'${recipeName}':'${entryName}':'${wfId}'`;
     }
 
-    private async start(recipeName: string) {
-        this.logInfo(`Recipe: '${recipeName}' is starting`);
+    private async start(recipeName: string, fromRecipeEntryName?: string) {
+        this.logInfo(`Recipe: '${recipeName}' started.`);
 
         const recipe = await this.recipeStorage.get(recipeName);
         const state: RecipeRuntimeState = {
@@ -62,12 +63,19 @@ export class RecipeRunnerService {
         await this.updateFromRuntime(state, true);
 
         try {
+            let shouldSkipUntilRecipeEntry = !!fromRecipeEntryName;
             for (const entry of recipe.entries) {
-                this.logInfo(`Recipe: '${recipeName}'.'${entry.name}' is starting`);
+                if (shouldSkipUntilRecipeEntry) {
+                    if (entry.name === fromRecipeEntryName) {
+                        shouldSkipUntilRecipeEntry = false;
+                    }
+                }
+                this.logInfo(`Recipe: '${recipeName}'.'${entry.name}' started.`);
 
                 const runtimeEntry: RecipeEntryRuntime = {
                     recipeEntryName: entry.name,
                     isFinished: false,
+                    isSkipped: false,
                     startTime: new Date()
                 };
 
@@ -76,41 +84,23 @@ export class RecipeRunnerService {
 
                 await this.updateFromRuntime(state);
 
-                //
-                // Run workflow for recipe entry.
-                //
-                const wfRunner = this.workflowRunnerServiceFactory.create(entry.workflow, state);
-                try {
-                  while (wfRunner.moveNext()) {
-                    const wf = wfRunner.getCurrent();
-                    runtimeEntry.currentWorkflowItem = wf;
-                    state.cursorStr = this.getCursorStr(recipe.name, entry.name, wf.id);
+                if (shouldSkipUntilRecipeEntry) {
+                    state.cursorStr = this.getCursorStr(recipe.name, entry.name, 'SKIP');
+                    this.logInfo(`Recipe: '${recipeName}'.'${entry.name}' skipped.`);
+                } else {
+                    const isAborted = await this.runRecipeEntryWorkflow(
+                        recipe,
+                        entry,
+                        state,
+                        runtimeEntry);
 
-                    await this.updateFromRuntime(state);
-                    if (state.isAborted) {
-                      this.logInfo(`Recipe: '${recipeName}' detected abort`);
-                      return true;
+                    if (isAborted) {
+                        return true;
                     }
-
-                    await wfRunner.runCurrentItem();
-                    await new Promise((resolve => setTimeout(() => resolve(), 100)));
-
-                    await this.updateFromRuntime(state);
-                    if (state.isAborted) {
-                      this.logInfo(`Recipe: '${recipeName}' detected abort`);
-                      return true;
-                    }
-                  }
-                } catch (err) {
-                  await wfRunner.runOnError();
-                  throw err;
-                } finally {
-                  if (state.isAborted) {
-                    await wfRunner.runOnAbort();
-                  }
                 }
 
                 runtimeEntry.isFinished = true;
+                runtimeEntry.isSkipped = shouldSkipUntilRecipeEntry;
                 runtimeEntry.finishTime = new Date();
 
                 await this.updateFromRuntime(state);
@@ -119,7 +109,7 @@ export class RecipeRunnerService {
                     return true;
                 }
 
-                this.logInfo(`Recipe: '${recipeName}'.'${entry.name}' is finished.`);
+                this.logInfo(`Recipe: '${recipeName}'.'${entry.name}' finished.`);
             }
             return true;
         } catch (e) {
@@ -127,6 +117,48 @@ export class RecipeRunnerService {
         } finally {
             await this.updateSetFinished();
         }
+    }
+
+    private async runRecipeEntryWorkflow(
+      recipe: Recipe,
+      entry: RecipeEntry,
+      state: RecipeRuntimeState,
+      runtimeEntry: RecipeEntryRuntime) {
+      //
+      // Run workflow for recipe entry.
+      //
+      const wfRunner = this.workflowRunnerServiceFactory.create(entry.workflow, state);
+      try {
+        while (wfRunner.moveNext()) {
+          const wf = wfRunner.getCurrent();
+          runtimeEntry.currentWorkflowItem = wf;
+          state.cursorStr = this.getCursorStr(recipe.name, entry.name, wf.id);
+
+          await this.updateFromRuntime(state);
+          if (state.isAborted) {
+            this.logInfo(`Recipe: '${recipe.name}' detected abort`);
+            return true;
+          }
+
+          await wfRunner.runCurrentItem();
+          await new Promise((resolve => setTimeout(() => resolve(), 100)));
+
+          await this.updateFromRuntime(state);
+          if (state.isAborted) {
+            this.logInfo(`Recipe: '${recipe.name}' detected abort`);
+            return true;
+          }
+        }
+      } catch (err) {
+        await wfRunner.runOnError();
+        throw err;
+      } finally {
+        if (state.isAborted) {
+          await wfRunner.runOnAbort();
+        }
+      }
+
+      return false;
     }
 
     private logInfo(msg: string) {

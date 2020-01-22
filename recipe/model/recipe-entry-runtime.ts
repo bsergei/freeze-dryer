@@ -4,6 +4,7 @@ export interface RecipeEntryRuntime {
     recipeEntryName: string;
 
     isFinished: boolean;
+    isSkipped: boolean;
 
     startTime: Date;
     finishTime?: Date;

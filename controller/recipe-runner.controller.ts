@@ -1,7 +1,7 @@
 import { controller, httpGet, httpPost, httpDelete } from 'inversify-express-utils';
 import { Request } from 'express';
 import { RecipeRunnerService } from '../recipe/recipe-runner.service';
-import { Recipe } from '../model';
+import { RecipeStartRequest } from '../model';
 
 @controller('/api/recipe-runner')
 export class RecipeRunnerController {
@@ -11,8 +11,8 @@ export class RecipeRunnerController {
 
     @httpPost('/')
     public async start(req: Request) {
-        const recipe = req.body as Recipe;
-        return this.runner.startAsFireAndForget(recipe.name);
+        const recipe = req.body as RecipeStartRequest;
+        return this.runner.startAsFireAndForget(recipe.name, recipe.recipeEntryName);
     }
 
     @httpGet('/')
