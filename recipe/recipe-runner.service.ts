@@ -5,6 +5,7 @@ import { Log } from '../service/logger.service';
 import { RecipeRuntimeState } from './model/recipe-runtime-state';
 import { RecipeEntryRuntime } from './model/recipe-entry-runtime';
 import { injectable } from 'inversify';
+import { ShutdownService } from '../service/shutdown.service';
 
 @injectable()
 export class RecipeRunnerService {
@@ -13,9 +14,11 @@ export class RecipeRunnerService {
         private workflowRunnerServiceFactory: WorkflowRunnerServiceFactory,
         private recipeStorage: RecipeStorage,
         private storageService: StorageService,
+        private shutdownService: ShutdownService,
         private log: Log) {
         // Cleanup and recover from unexpected shutdowns.
         this.storageService.delete(['recipe-status']);
+        this.shutdownService.onSigint(() => this.abort());
     }
 
     public async startAsFireAndForget(recipeName: string) {
@@ -76,19 +79,34 @@ export class RecipeRunnerService {
                 // Run workflow for recipe entry.
                 //
                 const wfRunner = this.workflowRunnerServiceFactory.create(entry.workflow, state);
-                while (wfRunner.moveNext()) {
+                try {
+                  while (wfRunner.moveNext()) {
                     const wf = wfRunner.getCurrent();
                     runtimeEntry.currentWorkflowItem = wf;
                     state.cursorStr = this.getCursorStr(recipe.name, entry.name, wf.id);
 
                     await this.updateFromRuntime(state);
                     if (state.isAborted) {
-                        this.logInfo(`Recipe: '${recipeName}' detected abort`);
-                        return true;
+                      this.logInfo(`Recipe: '${recipeName}' detected abort`);
+                      return true;
                     }
 
                     await wfRunner.runCurrentItem();
                     await new Promise((resolve => setTimeout(() => resolve(), 100)));
+
+                    await this.updateFromRuntime(state);
+                    if (state.isAborted) {
+                      this.logInfo(`Recipe: '${recipeName}' detected abort`);
+                      return true;
+                    }
+                  }
+                } catch (err) {
+                  await wfRunner.runOnError();
+                  throw err;
+                } finally {
+                  if (state.isAborted) {
+                    await wfRunner.runOnAbort();
+                  }
                 }
 
                 runtimeEntry.isFinished = true;

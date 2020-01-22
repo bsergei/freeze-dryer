@@ -48,6 +48,9 @@ export class WorkflowRunnerService {
     private reachedEnd: boolean;
     private isRun: boolean;
 
+    private onErrorItem: WorkflowItem;
+    private onAbortItem: WorkflowItem;
+
     constructor(
         private logger: Log,
         private sensorsStatusService: SensorsStatusService,
@@ -75,6 +78,16 @@ export class WorkflowRunnerService {
             this.reachedEnd = false;
             this.startTime = new Date();
             this.currentItem = this.workflow.find(i => i.type === 'start');
+            if (this.isCurrentItemValid()) {
+              const wfStart = this.currentItem as WfStart;
+              if (wfStart.on_error_id) {
+                this.onErrorItem = this.getItem(wfStart.on_error_id);
+              }
+
+              if (wfStart.on_abort_id) {
+                this.onAbortItem = this.getItem(wfStart.on_abort_id);
+              }
+            }
         } else {
             if (!this.isRun) {
                 throw new Error('Current item was not run');
@@ -120,23 +133,55 @@ export class WorkflowRunnerService {
             return;
         }
 
-        switch (this.currentItem.type) {
-            case 'action':
-                const actionItem = (this.currentItem as WfAction);
-                await this.runAction(actionItem);
-                break;
-
-            case 'condition':
-                const conditionItem = (this.currentItem as WfCondition);
-                this.conditionResult = await this.runCondition(conditionItem);
-                break;
-        }
+        await this.runItem(this.currentItem);
 
         this.isRun = true;
     }
 
+    public async runOnError() {
+      if (!this.isOnErrorItemValid()) {
+        return;
+      }
+
+      await this.runAction(this.onErrorItem as WfAction);
+    }
+
+    public async runOnAbort() {
+      if (!this.isOnAbortItemValid()) {
+        return;
+      }
+
+      await this.runAction(this.onAbortItem as WfAction);
+    }
+
+    private async runItem(wfItem: WorkflowItem) {
+      switch (wfItem.type) {
+        case 'action':
+          const actionItem = (wfItem as WfAction);
+          await this.runAction(actionItem);
+          break;
+
+        case 'condition':
+          const conditionItem = (wfItem as WfCondition);
+          this.conditionResult = await this.runCondition(conditionItem);
+          break;
+      }
+    }
+
     private isCurrentItemValid() {
         return this.currentItem !== undefined && this.currentItem !== null;
+    }
+
+    private isOnErrorItemValid() {
+      return this.onErrorItem !== undefined
+        && this.onErrorItem !== null
+        && this.onErrorItem.type === 'action';
+    }
+
+    private isOnAbortItemValid() {
+      return this.onAbortItem !== undefined
+        && this.onAbortItem !== null
+        && this.onAbortItem.type === 'action';
     }
 
     private getItem(id: string): WorkflowItem {
