@@ -6,30 +6,70 @@ import { WfTempContext } from './wf-temp-context';
 import { WfVacuumContext } from './wf-vacuum-context';
 import { Log } from '../../service/logger.service';
 import { SharedData } from '../model/shared-data';
+import { StorageService } from '../../service/storage.service';
 
 export class ActionContext {
-    public time: WfTimeContext;
+    private _time: WfTimeContext;
+    private _units: WfUnitsContext;
+    private _temp: WfTempContext;
+    private _vacuum: WfVacuumContext;
+    private _cursorStr: string;
+    private _custom: string;
+    private _log: (msg: string) => void;
 
-    public units: WfUnitsContext;
+    public get cursorStr() {
+        return this._cursorStr;
+    }
 
-    public temp: WfTempContext;
+    public get custom() {
+        return this._custom;
+    }
 
-    public vacuum: WfVacuumContext;
+    public get time() {
+        return this._time;
+    }
+
+    public get units() {
+        return this._units;
+    }
+
+    public get temp() {
+        return this._temp;
+    }
+
+    public get vacuum() {
+        return this._vacuum;
+    }
+
+    public get log() {
+        return this._log;
+    }
 
     constructor(
-        private data: SharedData,
-        private logger: Log,
+        data: SharedData,
+        logger: Log,
+        storage: StorageService,
         startTime: Date,
         sensors: SensorsStatus,
         values: WfContextValues) {
-        this.data = data;
-        this.time = new WfTimeContext(startTime, values);
-        this.units = new WfUnitsContext(values, sensors);
-        this.temp = new WfTempContext(sensors);
-        this.vacuum = new WfVacuumContext(sensors);
+        this._cursorStr = data.cursorStr;
+        this._custom = data.custom;
+        this._time = new WfTimeContext(startTime, values);
+        this._units = new WfUnitsContext(values, sensors);
+        this._temp = new WfTempContext(sensors);
+        this._vacuum = new WfVacuumContext(sensors);
+
+        this._log = (msg) => {
+            const coercedMsg = `WorkflowItem: ${this.cursorStr}: ${msg}`;
+            logger.info(coercedMsg);
+            storage.publish('recipe-log', coercedMsg);
+        };
     }
 
-    public log(msg: string) {
-        this.logger.info(`WorkflowItem: ${this.data.cursorStr}: ${msg}`);
+    public off() {
+        this.units.compressor = false;
+        this.units.fan = false;
+        this.units.heater = false;
+        this.units.vacuum = false;
     }
 }

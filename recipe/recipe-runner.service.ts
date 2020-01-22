@@ -55,7 +55,8 @@ export class RecipeRunnerService {
             isFinished: false,
             isAborted: false,
             steps: [],
-            cursorStr: undefined
+            cursorStr: undefined,
+            custom: {}
         };
 
         await this.updateFromRuntime(state, true);

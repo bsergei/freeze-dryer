@@ -10,34 +10,7 @@ import { WfContextValues } from './context/wf-context-values';
 import { Log } from '../service/logger.service';
 import { injectable } from 'inversify';
 import { SharedData } from './model/shared-data';
-
-@injectable()
-export class WorkflowRunnerServiceFactory {
-
-    constructor(
-        private logger: Log,
-        private sensorsStatusService: SensorsStatusService,
-        private compressorUnit: CompressorUnit,
-        private vacuumUnit: VacuumUnit,
-        private heaterUnit: HeaterUnit,
-        private drainValveUnit: DrainValveUnit,
-        private fanUnit: FanUnit) {
-    }
-
-    public create(workflow: WorkflowItem[], sharedData: SharedData): WorkflowRunnerService {
-        return new WorkflowRunnerService(
-            this.logger,
-            this.sensorsStatusService,
-            this.compressorUnit,
-            this.vacuumUnit,
-            this.heaterUnit,
-            this.drainValveUnit,
-            this.fanUnit,
-            workflow,
-            sharedData
-        );
-    }
-}
+import { StorageService } from '../service/storage.service';
 
 export class WorkflowRunnerService {
     private currentItem: WorkflowItem;
@@ -53,6 +26,7 @@ export class WorkflowRunnerService {
 
     constructor(
         private logger: Log,
+        private storage: StorageService,
         private sensorsStatusService: SensorsStatusService,
         private compressorUnit: CompressorUnit,
         private vacuumUnit: VacuumUnit,
@@ -198,6 +172,7 @@ export class WorkflowRunnerService {
         const dataContext = new ActionContext(
             this.sharedData,
             this.logger,
+            this.storage,
             this.startTime,
             sensorsStatus,
             values);
@@ -232,11 +207,42 @@ export class WorkflowRunnerService {
         const dataContext = new ActionContext(
             this.sharedData,
             this.logger,
+            this.storage,
             this.startTime,
             sensorsStatus,
             undefined);
         const actionContext = vm.createContext(dataContext);
         const result = vm.runInContext(item.cmd, actionContext);
         return result as boolean;
+    }
+}
+
+@injectable()
+export class WorkflowRunnerServiceFactory {
+
+    constructor(
+        private logger: Log,
+        private storage: StorageService,
+        private sensorsStatusService: SensorsStatusService,
+        private compressorUnit: CompressorUnit,
+        private vacuumUnit: VacuumUnit,
+        private heaterUnit: HeaterUnit,
+        private drainValveUnit: DrainValveUnit,
+        private fanUnit: FanUnit) {
+    }
+
+    public create(workflow: WorkflowItem[], sharedData: SharedData): WorkflowRunnerService {
+        return new WorkflowRunnerService(
+            this.logger,
+            this.storage,
+            this.sensorsStatusService,
+            this.compressorUnit,
+            this.vacuumUnit,
+            this.heaterUnit,
+            this.drainValveUnit,
+            this.fanUnit,
+            workflow,
+            sharedData
+        );
     }
 }
