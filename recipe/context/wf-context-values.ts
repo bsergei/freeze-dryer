@@ -4,6 +4,7 @@ export class WfContextValues {
     public heaterUnit: boolean;
     public drainValveUnit: boolean;
     public fanUnit: boolean;
+    public thawingUnit: boolean;
 
     public delay: number;
 }

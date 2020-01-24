@@ -218,7 +218,7 @@ export class RecipeRunnerService {
 
     private async updateSetAborted() {
         const result = await this.updateState(v => {
-            if (v) {
+            if (v && !v.isFinished) {
                 v.isAborted = true;
             }
             return v;

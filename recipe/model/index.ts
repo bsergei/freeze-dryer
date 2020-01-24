@@ -1,4 +1,5 @@
 export * from './wf-action';
+export * from './wf-final-action';
 export * from './wf-condition';
 export * from './wf-end';
 export * from './wf-start';

@@ -1,5 +1,5 @@
 import * as vm from 'vm';
-import { CompressorUnit, VacuumUnit, HeaterUnit, DrainValveUnit, FanUnit, Unit } from '../unit-control';
+import { CompressorUnit, VacuumUnit, HeaterUnit, DrainValveUnit, FanUnit, Unit, ThawingUnit } from '../unit-control';
 import { SensorsStatusService } from '../service/sensors-status.service';
 import { WorkflowItem } from './model/workflow-item';
 import { WfStart } from './model/wf-start';
@@ -11,6 +11,7 @@ import { Log } from '../service/logger.service';
 import { injectable } from 'inversify';
 import { SharedData } from './model/shared-data';
 import { StorageService } from '../service/storage.service';
+import { WfFinalAction } from './model/wf-final-action';
 
 export class WorkflowRunnerService {
     private currentItem: WorkflowItem;
@@ -33,6 +34,7 @@ export class WorkflowRunnerService {
         private heaterUnit: HeaterUnit,
         private drainValveUnit: DrainValveUnit,
         private fanUnit: FanUnit,
+        private thawingUnit: ThawingUnit,
         private workflow: WorkflowItem[],
         private sharedData: SharedData) {
         this.initialized = false;
@@ -117,7 +119,7 @@ export class WorkflowRunnerService {
         return;
       }
 
-      await this.runAction(this.onErrorItem as WfAction);
+      await this.runAction(this.onErrorItem as WfFinalAction);
     }
 
     public async runOnAbort() {
@@ -125,7 +127,7 @@ export class WorkflowRunnerService {
         return;
       }
 
-      await this.runAction(this.onAbortItem as WfAction);
+      await this.runAction(this.onAbortItem as WfFinalAction);
     }
 
     private async runItem(wfItem: WorkflowItem) {
@@ -149,20 +151,20 @@ export class WorkflowRunnerService {
     private isOnErrorItemValid() {
       return this.onErrorItem !== undefined
         && this.onErrorItem !== null
-        && this.onErrorItem.type === 'action';
+        && this.onErrorItem.type === 'final_action';
     }
 
     private isOnAbortItemValid() {
       return this.onAbortItem !== undefined
         && this.onAbortItem !== null
-        && this.onAbortItem.type === 'action';
+        && this.onAbortItem.type === 'final_action';
     }
 
     private getItem(id: string): WorkflowItem {
         return this.workflow.find(i => i.id === id);
     }
 
-    private async runAction(item: WfAction) {
+    private async runAction(item: WfAction | WfFinalAction) {
         if (!item.cmd) {
             return;
         }
@@ -188,6 +190,7 @@ export class WorkflowRunnerService {
         await this.switchUnitIfNeed(values.heaterUnit, this.heaterUnit);
         await this.switchUnitIfNeed(values.drainValveUnit, this.drainValveUnit);
         await this.switchUnitIfNeed(values.fanUnit, this.fanUnit);
+        await this.switchUnitIfNeed(values.thawingUnit, this.thawingUnit);
     }
 
     private async switchUnitIfNeed(value: boolean, unit: Unit) {
@@ -228,7 +231,8 @@ export class WorkflowRunnerServiceFactory {
         private vacuumUnit: VacuumUnit,
         private heaterUnit: HeaterUnit,
         private drainValveUnit: DrainValveUnit,
-        private fanUnit: FanUnit) {
+        private fanUnit: FanUnit,
+        private thawingUnit: ThawingUnit) {
     }
 
     public create(workflow: WorkflowItem[], sharedData: SharedData): WorkflowRunnerService {
@@ -241,6 +245,7 @@ export class WorkflowRunnerServiceFactory {
             this.heaterUnit,
             this.drainValveUnit,
             this.fanUnit,
+            this.thawingUnit,
             workflow,
             sharedData
         );

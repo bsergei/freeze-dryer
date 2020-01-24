@@ -41,6 +41,18 @@ export class WfUnitsContext {
         this.values.heaterUnit = value;
     }
 
+    public get thawing(): boolean {
+        if (this.values && this.values.thawingUnit !== undefined) {
+            return this.values.thawingUnit;
+        }
+        const gpio = this.sensors.gpios.find(i => i.id === 'thawing');
+        return gpio.value;
+    }
+
+    public set thawing(value: boolean) {
+        this.values.thawingUnit = value;
+    }
+
     public get drain_valve(): boolean {
         if (this.values && this.values.drainValveUnit !== undefined) {
             return this.values.drainValveUnit;
