@@ -16,6 +16,8 @@ export class ActionContext {
     private _cursorStr: string;
     private _custom: string;
     private _log: (msg: string) => void;
+    private _safety_on: () => void;
+    private _turn_off: () => void;
 
     public get cursorStr() {
         return this._cursorStr;
@@ -45,6 +47,14 @@ export class ActionContext {
         return this._log;
     }
 
+    public get turn_off() {
+        return this._turn_off;
+    }
+
+    public get safety_on() {
+        return this._safety_on;
+    }
+
     constructor(
         data: SharedData,
         logger: Log,
@@ -59,17 +69,26 @@ export class ActionContext {
         this._temp = new WfTempContext(sensors);
         this._vacuum = new WfVacuumContext(sensors);
 
-        this._log = (msg) => {
-            const coercedMsg = `WorkflowItem: ${this.cursorStr}: ${msg}`;
+        this._log = (msg: string) => {
+            const coercedMsg = `Recipe message at ${this.cursorStr}: ${msg}`;
             logger.info(coercedMsg);
             storage.publish('recipe-log', coercedMsg);
         };
-    }
 
-    public off() {
-        this.units.compressor = false;
-        this.units.fan = false;
-        this.units.heater = false;
-        this.units.vacuum = false;
+        this._turn_off = () => {
+            this.units.compressor = false;
+            this.units.fan = false;
+            this.units.heater = false;
+            this.units.vacuum = false;
+            this.units.thawing = false;
+        };
+
+        this._safety_on = () => {
+            this.units.compressor = true;
+            this.units.fan = false;
+            this.units.heater = false;
+            this.units.vacuum = false;
+            this.units.thawing = false;
+        };
     }
 }

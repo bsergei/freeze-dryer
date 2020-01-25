@@ -1,4 +1,4 @@
-import { WorkflowRunnerServiceFactory } from './workflow-runner.service';
+import { WorkflowRunnerServiceFactory, WorkflowRunnerService } from './workflow-runner.service';
 import { StorageService } from '../service/storage.service';
 import { RecipeStorage } from './recipe-storage.service';
 import { Log } from '../service/logger.service';
@@ -105,7 +105,7 @@ export class RecipeRunnerService {
 
                 await this.updateFromRuntime(state);
                 if (state.isAborted) {
-                    this.logInfo(`Recipe: '${recipeName}' detected abort`);
+                    this.logInfo(`Recipe: '${recipeName}' detected abort.`);
                     return true;
                 }
 
@@ -136,7 +136,7 @@ export class RecipeRunnerService {
 
           await this.updateFromRuntime(state);
           if (state.isAborted) {
-            this.logInfo(`Recipe: '${recipe.name}' detected abort`);
+            this.logInfo(`Recipe: '${recipe.name}' detected abort.`);
             return true;
           }
 
@@ -145,20 +145,34 @@ export class RecipeRunnerService {
 
           await this.updateFromRuntime(state);
           if (state.isAborted) {
-            this.logInfo(`Recipe: '${recipe.name}' detected abort`);
+            this.logInfo(`Recipe: '${recipe.name}' detected abort.`);
             return true;
           }
         }
-      } catch (err) {
-        await wfRunner.runOnError();
-        throw err;
+      } catch (e) {
+        this.runOnError(wfRunner, recipe);
+        throw e;
       } finally {
         if (state.isAborted) {
-          await wfRunner.runOnAbort();
+            this.runOnAbort(wfRunner, recipe);
         }
       }
 
       return false;
+    }
+
+    private async runOnError(wfRunner: WorkflowRunnerService, recipe: Recipe) {
+        const isRun = await wfRunner.runOnError();
+        if (isRun) {
+            this.logInfo(`Recipe: '${recipe.name}': ERROR handler executed.`);
+        }
+    }
+
+    private async runOnAbort(wfRunner: WorkflowRunnerService, recipe: Recipe) {
+        const isRun = await wfRunner.runOnAbort();
+        if (isRun) {
+            this.logInfo(`Recipe: '${recipe.name}': ABORT handler executed.`);
+        }
     }
 
     private logInfo(msg: string) {
@@ -169,7 +183,9 @@ export class RecipeRunnerService {
     private logError(msg: string, error: Error) {
         this.log.error(msg, error);
         this.storageService.publish('recipe-log', msg);
-        this.storageService.publish('recipe-log', error.message);
+        if (error) {
+            this.storageService.publish('recipe-log', 'ERROR: ' + error);
+        }
     }
 
     private async updateState(func: (v: RecipeRuntimeState) => RecipeRuntimeState) {

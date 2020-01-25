@@ -116,18 +116,20 @@ export class WorkflowRunnerService {
 
     public async runOnError() {
       if (!this.isOnErrorItemValid()) {
-        return;
+        return false;
       }
 
       await this.runAction(this.onErrorItem as WfFinalAction);
+      return true;
     }
 
     public async runOnAbort() {
       if (!this.isOnAbortItemValid()) {
-        return;
+        return false;
       }
 
       await this.runAction(this.onAbortItem as WfFinalAction);
+      return true;
     }
 
     private async runItem(wfItem: WorkflowItem) {
