@@ -11,7 +11,7 @@ let shouldExit = false;
 
 function spawnSenderProcess(id: string) {
   try {
-    let senderProcess = cp.fork(__dirname + `/${id}`, ['child', ...process.argv.slice(2)]);
+    let senderProcess = cp.fork(__dirname + `/${id}`, ['child', ...process.argv.slice(2), `process_id=${id}`]);
     senderProcess.on('exit', (code, signal) => {
       log.info(`${id} exited...`);
       if (!shouldExit) {

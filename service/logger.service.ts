@@ -1,20 +1,23 @@
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { injectable } from 'inversify';
-import { NotifyService } from './notify.service';
 
 @injectable()
 export class Log {
 
     private logger: winston.Logger;
+    private pidName: string;
+    private pid: number;
 
-    constructor(private notifyService: NotifyService) {
+    constructor() {
+        this.pidName = this.getPidName();
+        this.pid = process.pid;
+
         const transport = new DailyRotateFile({
             dirname: __dirname + '/../logs',
-            filename: `fd-%DATE%-${process.pid}.log`,
-            datePattern: 'YYYY-MM-DD-HH',
+            filename: `fd-%DATE%.log`,
+            datePattern: 'YYYY-MM-DD',
             zippedArchive: false,
-            maxSize: '20m',
             maxFiles: '5d'
           });
 
@@ -32,8 +35,7 @@ export class Log {
             ? (` at: ${error.stack}`)
             : '';
             const msg = `${new Date().toISOString()}: ${message}${stack}`;
-            this.logger.error(msg);
-            this.notifyService.error([msg]);
+            this.logger.error(msg, this.getMeta());
         } catch (e) {
             console.log('Error in logger: ' + e);
         }
@@ -41,9 +43,27 @@ export class Log {
 
     public info(message: string) {
         try {
-            this.logger.info(`${new Date().toISOString()}: ${message}`);
+            const msg = `${new Date().toISOString()}: ${message}`;
+            this.logger.info(msg, this.getMeta());
         } catch (e) {
             console.log('Error in logger: ' + e);
         }
+    }
+
+    private getMeta() {
+        return {
+            'pidName': this.pidName,
+            'pid': this.pid
+        };
+    }
+
+    private getPidName() {
+        let pidName = 'main';
+        const pidNamePair = process.argv.find(_ => _.indexOf('process_id=') >= 0);
+        if (pidNamePair) {
+            const pair = pidNamePair.split('=');
+            pidName = pair[1];
+        }
+        return pidName;
     }
 }
