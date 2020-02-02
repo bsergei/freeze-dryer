@@ -64,7 +64,7 @@ export class GpioService {
             }
         ];
 
-        this.shutdownService.onSigint(() => {
+        this.shutdownService.subscribe(async () => {
             for (const pin of this.pins) {
                 try {
                     pin.pin.unexport();

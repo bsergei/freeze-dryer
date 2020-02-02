@@ -9,21 +9,25 @@ const log = container.get(Log);
 const shutdownService = container.get(ShutdownService);
 let shouldExit = false;
 
-function spawnSenderProcess(id: string) {
+function spawnChildProcess(id: string) {
   try {
-    let senderProcess = cp.fork(__dirname + `/${id}`, ['child', ...process.argv.slice(2), `process_id=${id}`]);
-    senderProcess.on('exit', (code, signal) => {
-      log.info(`${id} exited...`);
-      if (!shouldExit) {
-        log.info(`${id} respawing...`);
-        spawnSenderProcess(id);
-      }
+    const childProcess = cp.fork(__dirname + `/${id}`, ['child', ...process.argv.slice(2), `process_id=${id}`]);
+    const exitPromise = new Promise<void>(resolve => {
+      childProcess.on('exit', (code, signal) => {
+        log.info(`${id} exited...`);
+        if (!shouldExit) {
+          log.info(`${id} respawing...`);
+          spawnChildProcess(id);
+        }
+        resolve();
+      });
     });
 
-    log.info(`${id} started: pid=${senderProcess.pid}`);
+    log.info(`${id} started: pid=${childProcess.pid}`);
 
-    shutdownService.onSigint(() => {
+    shutdownService.subscribe(async () => {
       shouldExit = true;
+      await exitPromise;
     });
 
   } catch (e) {
@@ -49,8 +53,8 @@ async function startApp() {
   const messenger = container.resolve(TelegramService);
   await messenger.init();
 
-  spawnSenderProcess('child.sender');
-  spawnSenderProcess('child.sensors');
+  spawnChildProcess('child.sender');
+  spawnChildProcess('child.sensors');
 }
 
 startApp();

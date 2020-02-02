@@ -10,7 +10,6 @@ import { sensorTypes } from '../model';
 import { RecipeRunnerService } from '../recipe/recipe-runner.service';
 
 interface TelegramClients {
-    // allClients: number[];
     listenRecipe: number[];
     listenErrors: number[];
 }
@@ -77,7 +76,7 @@ export class TelegramService {
             this.bot.telegram.sendMessage(client, '🔌 Freeze Dryer started');
         }
 
-        this.shutdownService.onSigint(async () => await this.onShutdown());
+        this.shutdownService.subscribe(() => this.onShutdown());
         this.log.info('Telegram service started.');
     }
 
@@ -218,7 +217,7 @@ export class TelegramService {
 
     private async onShutdown() {
         for (const client of this.clients.listenRecipe) {
-            this.bot.telegram.sendMessage(client, '🔌 Freeze Dryer stopping');
+            await this.bot.telegram.sendMessage(client, '🔌 Freeze Dryer stopping');
         }
         await this.shutdown();
         this.log.info('Telegram service stopped.');
@@ -237,9 +236,10 @@ export class TelegramService {
     }
 
     private async shutdown() {
-        await this.bot.stop();
-        for (const s of this.rtUnsubscribers) {
-            await s;
+        for (const unsubscriber of this.rtUnsubscribers) {
+            await unsubscriber;
         }
+
+        await this.bot.stop();
     }
 }

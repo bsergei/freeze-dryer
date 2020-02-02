@@ -4,32 +4,47 @@ import { Log } from './logger.service';
 @injectable()
 export class ShutdownService {
 
-    private handlers: (() => void)[];
+    private handlers: (() => Promise<any>)[];
 
     constructor(log: Log) {
         this.handlers = [];
         const isChild = process.argv.indexOf('child') >= 0;
-        const tm = isChild ? 2000 : 5000;
 
         log.info('ShutdownService created.');
         process.on('SIGINT', async () => {
-            log.info('Exit process: cleanup');
+            log.info('ShutdownService: starting shutdown procedure');
+            const handlerPromises: Promise<any>[] = [];
             for (const handler of this.handlers) {
-                try {
-                    handler();
-                } catch (e) {
-                    log.error(e);
-                }
+                const wrapper = async () => {
+                    try {
+                        await handler();
+                    } catch (e) {
+                        log.error(e);
+                    }
+                };
+                const handlerPromise = wrapper();
+                handlerPromises.push(handlerPromise);
             }
             this.handlers = [];
 
-            log.info(`Exit ${isChild ? 'child' : ''} process: process.exit()`);
-            console.log(`${isChild ? 'Child' : ''} Process will exit in ${tm}ms`);
+            log.info('ShutdownService: Awaiting services to shutdown...');
+
+            try {
+                await Promise.all(handlerPromises);
+            } catch {
+                // Ignore any error.
+            }
+
+            const tm = 250;
+            const exitMsg = `ShutdownService: OK, ${isChild ? 'child' : 'main'} process will exit in ${tm}ms`;
+            log.info(exitMsg);
+            console.log(exitMsg);
+            // Give enough time to finish logger.
             setTimeout(() => process.exit(), tm);
         });
     }
 
-    public onSigint(handler: () => void) {
+    public subscribe(handler: () => Promise<any>) {
         this.handlers.push(handler);
     }
 }

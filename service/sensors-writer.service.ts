@@ -8,6 +8,7 @@ import { ShutdownService } from './shutdown.service';
 export class SensorsWriterService {
 
     private isInited = false;
+    private isStopped = false;
 
     private timerTemperature: NodeJS.Timer;
     private timerGpioService: NodeJS.Timer;
@@ -18,18 +19,12 @@ export class SensorsWriterService {
         private storageService: StorageService,
         private sensorsStatusService: SensorsStatusService,
         private shutdownService: ShutdownService) {
-        this.shutdownService.onSigint(() => {
-            if (this.timerTemperature) {
-                clearTimeout(this.timerTemperature);
-            }
+        this.shutdownService.subscribe(async () => {
+            this.isStopped = true;
 
-            if (this.timerGpioService) {
-                clearTimeout(this.timerGpioService);
-            }
-
-            if (this.timerPressure) {
-                clearTimeout(this.timerPressure);
-            }
+            this.stopTemperatureSensors();
+            this.stopGpioSensors();
+            this.stopPressureSensors();
 
             this.log.info(`SensorsWriterService stopped`);
         });
@@ -51,30 +46,84 @@ export class SensorsWriterService {
         }
     }
 
+    private stopPressureSensors() {
+        if (this.timerPressure) {
+            clearTimeout(this.timerPressure);
+            this.timerPressure = undefined;
+        }
+    }
+
+    private stopGpioSensors() {
+        if (this.timerGpioService) {
+            clearTimeout(this.timerGpioService);
+            this.timerGpioService = undefined;
+        }
+    }
+
+    private stopTemperatureSensors() {
+        if (this.timerTemperature) {
+            clearTimeout(this.timerTemperature);
+            this.timerTemperature = undefined;
+        }
+    }
+
     private async updateTemperatureSensors() {
+        if (this.isStopped) {
+            return;
+        }
+
+        this.stopTemperatureSensors();
+
         try {
             await this.sensorsStatusService.updateTemperatureSensors();
         } catch (err) {
             this.log.error(`Error in updateTemperatureSensors: ${err}`, err);
         }
+
+        if (this.isStopped) {
+            return;
+        }
+
         this.timerTemperature = setTimeout(() => this.updateTemperatureSensors(), 500);
     }
 
     private async updateGpioSensors() {
+        if (this.isStopped) {
+            return;
+        }
+
+        this.stopGpioSensors();
+
         try {
             await this.sensorsStatusService.updateGpioSensors();
         } catch (err) {
             this.log.error(`Error in updateGpioSensors: ${err}`, err);
         }
+
+        if (this.isStopped) {
+            return;
+        }
+
         this.timerGpioService = setTimeout(() => this.updateGpioSensors(), 100);
     }
 
     private async updatePressureSensors() {
+        if (this.isStopped) {
+            return;
+        }
+
+        this.stopPressureSensors();
+
         try {
             await this.sensorsStatusService.updatePressureSensors();
         } catch (err) {
             this.log.error(`Error in updatePressureSensors: ${err}`, err);
         }
+
+        if (this.isStopped) {
+            return;
+        }
+
         this.timerPressure = setTimeout(() => this.updatePressureSensors(), 300);
     }
 }

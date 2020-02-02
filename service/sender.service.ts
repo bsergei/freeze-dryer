@@ -9,6 +9,7 @@ import { ShutdownService } from './shutdown.service';
 export class SenderService {
 
     private timer: NodeJS.Timer;
+    private isStopped = false;
 
     constructor(
         private influxService: InfluxService,
@@ -16,10 +17,9 @@ export class SenderService {
         private sensorsStatus: SensorsStatusService,
         private shutdownService: ShutdownService,
         private log: Log) {
-        this.shutdownService.onSigint(() => {
-            if (this.timer) {
-                clearTimeout(this.timer);
-            }
+        this.shutdownService.subscribe(async () => {
+            this.isStopped = true;
+            this.stopSender();
             this.log.info('SenderService stopped');
         });
     }
@@ -32,13 +32,31 @@ export class SenderService {
         }
     }
 
+    private stopSender() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = undefined;
+        }
+    }
+
     private async writeSensorStatus() {
+        if (this.isStopped) {
+            return;
+        }
+
+        this.stopSender();
+
         try {
             const status = await this.sensorsStatus.getFromCache();
             await this.influxService.writeSensorStatus(status);
         } catch (e) {
             this.log.error(`Error in SenderService.writeSensorStatus: ${e}`, e);
         }
+
+        if (this.isStopped) {
+            return;
+        }
+
         this.timer = setTimeout(() => this.writeSensorStatus(), 5000);
     }
 }
