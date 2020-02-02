@@ -28,4 +28,9 @@ export class MockController {
         // tslint:disable-next-line:no-string-literal
         (this.temperatureService as TempSensorServiceMock).setTemperature(req.query['id'], Number(req.query['value']));
     }
+
+    @httpGet('/error-test')
+    public async errorTest(req: Request) {
+        this.log.error('Error test');
+    }
 }

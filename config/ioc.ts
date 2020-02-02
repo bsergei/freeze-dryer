@@ -22,11 +22,15 @@ import { RealtimeService } from '../service/realtime.service';
 import { configureRecipe } from '../recipe/ioc/ioc';
 import { ShutdownService } from '../service/shutdown.service';
 import { TelegramService } from '../service/telegram.service';
+import { ErrorNotifierService } from '../service/error-notifier.service';
 
 const isMock = process.argv.indexOf('mock') >= 0;
 
 const container = new Container();
 
+container.bind<ErrorNotifierService>(ErrorNotifierService).toDynamicValue(
+    ctx => new ErrorNotifierService(
+        () => ctx.container.resolve(StorageService))).inSingletonScope();
 container.bind<Log>(Log).toSelf().inSingletonScope();
 container.bind<ShutdownService>(ShutdownService).toSelf().inSingletonScope();
 container.bind<StorageService>(StorageService).toSelf().inSingletonScope();

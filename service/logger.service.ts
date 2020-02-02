@@ -1,6 +1,7 @@
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { injectable } from 'inversify';
+import { ErrorNotifierService } from './error-notifier.service';
 
 @injectable()
 export class Log {
@@ -9,7 +10,7 @@ export class Log {
     private pidName: string;
     private pid: number;
 
-    constructor() {
+    constructor(private errorNotifier: ErrorNotifierService) {
         this.pidName = this.getPidName();
         this.pid = process.pid;
 
@@ -36,6 +37,7 @@ export class Log {
             : '';
             const msg = `${new Date().toISOString()}: ${message}${stack}`;
             this.logger.error(msg, this.getMeta());
+            this.errorNotifier.notifyError(msg);
         } catch (e) {
             console.log('Error in logger: ' + e);
         }

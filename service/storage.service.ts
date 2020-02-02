@@ -219,12 +219,14 @@ export class StorageService {
         });
     }
 
-    public async publish(channel: RealtimeChannel, message: any) {
+    public async publish(channel: RealtimeChannel, message: any, ignoreError: boolean = false) {
         const client = await this.clientInstance;
         return new Promise<void>((resolve, reject) => {
             client.publish(channel, JSON.stringify(message), (err, reply) => {
                 if (err) {
-                    this.log.error('RealtimeRedis error: ' + err, err);
+                    if (!ignoreError) {
+                        this.log.error('RealtimeRedis error: ' + err, err);
+                    }
                     reject(err);
                     return;
                 }
