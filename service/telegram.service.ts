@@ -8,6 +8,7 @@ import { StorageService } from './storage.service';
 import { SensorsStatusService } from './sensors-status.service';
 import { sensorTypes } from '../model';
 import { RecipeRunnerService } from '../recipe/recipe-runner.service';
+import * as Queue from 'sync-queue';
 
 interface TelegramClients {
     listenRecipe: number[];
@@ -64,13 +65,25 @@ export class TelegramService {
 
         await this.bot.launch();
 
+        const queue = new Queue();
+
         this.rtUnsubscribers.push(await this.realtimeService.subscribe(
             'recipe-log',
-            async msg => await this.sendRecipeLog(msg)));
+            msg => {
+                queue.place(async () => {
+                    await this.sendRecipeLog(msg);
+                    queue.next();
+                });
+            }));
 
         this.rtUnsubscribers.push(await this.realtimeService.subscribe(
             'notify-error',
-            async msg => await this.sendNotifyError(msg)));
+            msg => {
+                queue.place(async () => {
+                    await this.sendNotifyError(msg);
+                    queue.next();
+                });
+            }));
 
         for (const client of this.clients.listenRecipe) {
             this.bot.telegram.sendMessage(client, '🔌 Freeze Dryer started');
