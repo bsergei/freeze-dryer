@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 import { TempSensorService } from './temp-sensor.service';
 import { TempSensorOptService } from './temp-sensor-opt.service';
 import { sensorTypes } from '../model/sensor-type.model';
-import { SensorsStatus } from '../model/sensors-status.model';
+import { SensorsStatus, SensorTempErrorObj } from '../model/sensors-status.model';
 import { GpioService } from './gpio.service';
 import { StorageService } from './storage.service';
 import { AdcService } from './adc.service';
@@ -48,25 +48,42 @@ export class SensorsStatusService {
     public async updateTemperatureSensors() {
         try {
             const opts = await this.sensorOptService.getSensorOpts();
-            const sensorTypes = new Map<string, SensorOpt>();
+            const sensorTypesUsed = new Map<string, SensorOpt>();
             for (const sensorType of opts) {
-                sensorTypes.set(sensorType.sensor_type, sensorType);
+                sensorTypesUsed.set(sensorType.sensor_type, sensorType);
             }
 
+            let tempErrors: SensorTempErrorObj;
+
             await this.updateInCache(status => {
+                if (!status.temp_sensors) {
+                    status.temp_sensors = {};
+                }
                 const t = status.temp_sensors;
+
+                if (!status.temp_errors) {
+                    status.temp_errors = {};
+                }
+                const e = status.temp_errors;
+
                 for (const sensorType of Object.getOwnPropertyNames(t)) {
-                    if (!sensorTypes.has(sensorType)) {
+                    if (!sensorTypesUsed.has(sensorType)) {
                         // Delete sensor id.
                         delete t[sensorType];
+                        delete e[sensorType];
                     }
                 }
+
+                tempErrors = status.temp_errors;
                 return status;
             });
 
             const errors: string[] = [];
             for (const opt of opts) {
-                await this.updateTemperature(opt, errors);
+                const canUpdate = this.canUpdateTemperature(opt, tempErrors);
+                if (canUpdate) {
+                    await this.updateTemperature(opt, errors);
+                }
             }
 
             if (errors.length > 0) {
@@ -77,6 +94,20 @@ export class SensorsStatusService {
         } catch (err) {
             this.log.error(`Error reading temperatures: ${err}`, err);
         }
+    }
+
+    private canUpdateTemperature(opt: SensorOpt, tempErrors: SensorTempErrorObj) {
+        if (tempErrors && tempErrors[opt.sensor_type]) {
+            const currDate = new Date();
+            const errDate = new Date(tempErrors[opt.sensor_type].ts);
+            const elapsedSeconds = Math.abs(currDate.getTime() - errDate.getTime()) / (1000.0);
+            if (elapsedSeconds < (2 * 60)) {
+                return false;
+            } else {
+                this.log.info(`Retry to read ${opt.sensor_type}/${opt.sensor_id} sensor after error.`);
+            }
+        }
+        return true;
     }
 
     private async writeSensors(
@@ -164,14 +195,36 @@ export class SensorsStatusService {
         const sensorType = sensorTypes.find(_ => _.id === sensorTypeId);
 
         let temperature: number = undefined;
+        let error: string = undefined;
         try {
             temperature = await this.tempSensorService.getTemperature(sensorId);
         } catch (err) {
-            errors.push(`Error reading temperature for '${sensorTypeId}/${sensorId}': ${err}`);
+            error = `Error reading temperature for '${sensorTypeId}/${sensorId}': ${err}`;
         }
 
         await this.updateInCache(status => {
+            if (!status.temp_sensors) {
+                status.temp_sensors = {};
+            }
             const t = status.temp_sensors;
+
+            if (!status.temp_errors) {
+                status.temp_errors = {};
+            }
+            const tempErrors = status.temp_errors;
+
+            if (error === undefined || error === null) {
+                delete tempErrors[sensorTypeId];
+            } else {
+                const currentError = tempErrors[sensorTypeId];
+                if (!currentError || currentError.error !== error) {
+                    errors.push(error);
+                }
+                tempErrors[sensorTypeId] = {
+                    error: error,
+                    ts: new Date().toString()
+                };
+            }
 
             if (temperature === undefined || temperature === null) {
                 delete t[sensorTypeId];
@@ -180,7 +233,7 @@ export class SensorsStatusService {
                     sensor_id: sensorTypeId,
                     sensor_type: sensorType,
                     temperature: temperature,
-                    ts: new Date
+                    ts: new Date()
                 };
             }
 
@@ -194,6 +247,7 @@ export class SensorsStatusService {
         const result: SensorsStatus = {
             ts: new Date(),
             temp_sensors: {},
+            temp_errors: {},
             gpios: [],
             gpios_ts: new Date(),
             adcs: [],

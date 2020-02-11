@@ -12,10 +12,18 @@ export type SensorTempConnectedObj = {
     [id in TempSensorTypeId]?: SensorTempConnected;
 };
 
+export type SensorTempErrorObj = {
+    [id in TempSensorTypeId]?: {
+        ts: string;
+        error: string;
+    };
+};
+
 export interface SensorsStatus {
     ts: Date;
 
     temp_sensors: SensorTempConnectedObj;
+    temp_errors: SensorTempErrorObj;
 
     gpios: GpioStatus[];
     gpios_ts: Date;
