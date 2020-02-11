@@ -2,7 +2,7 @@ import 'reflect-metadata';
 
 import { Container } from 'inversify';
 import { TempSensorService, TempSensorServiceMock } from '../service/temp-sensor.service';
-import { StorageService } from '../service/storage.service';
+import { StorageService, StorageServiceFactory } from '../service/storage.service';
 import { TempSensorOptService } from '../service/temp-sensor-opt.service';
 import { SensorsStatusService } from '../service/sensors-status.service';
 import { InfluxService } from '../service/influx.service';
@@ -28,12 +28,11 @@ const isMock = process.argv.indexOf('mock') >= 0;
 
 const container = new Container();
 
-container.bind<ErrorNotifierService>(ErrorNotifierService).toDynamicValue(
-    ctx => new ErrorNotifierService(
-        () => ctx.container.resolve(StorageService))).inSingletonScope();
+container.bind<ErrorNotifierService>(ErrorNotifierService).toSelf().inSingletonScope();
 container.bind<Log>(Log).toSelf().inSingletonScope();
 container.bind<ShutdownService>(ShutdownService).toSelf().inSingletonScope();
 container.bind<StorageService>(StorageService).toSelf().inSingletonScope();
+container.bind<StorageServiceFactory>('StorageServiceFactory').toAutoFactory(StorageService);
 container.bind<TempSensorOptService>(TempSensorOptService).toSelf().inSingletonScope();
 container.bind<SensorsStatusService>(SensorsStatusService).toSelf().inSingletonScope();
 container.bind<InfluxService>(InfluxService).toSelf().inSingletonScope();

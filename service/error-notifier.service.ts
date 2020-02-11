@@ -1,9 +1,9 @@
-import { StorageService } from './storage.service';
-import { injectable } from 'inversify';
+import { StorageServiceFactory } from './storage.service';
+import { injectable, inject } from 'inversify';
 
 @injectable()
 export class ErrorNotifierService {
-    constructor(private storageService: () => StorageService) {
+    constructor(@inject('StorageServiceFactory') private storageService: StorageServiceFactory) {
     }
 
     public notifyError(msg: string) {

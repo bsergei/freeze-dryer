@@ -5,6 +5,8 @@ import { Log } from './logger.service';
 import * as Queue from 'sync-queue';
 import { RealtimeChannel } from './realtime';
 
+export type StorageServiceFactory = () => StorageService;
+
 @injectable()
 export class StorageService {
 
